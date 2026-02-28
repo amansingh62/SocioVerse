@@ -5,7 +5,7 @@ import { comparePassword, hashPassword } from "../../utils/hash.js";
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from "../../utils/tokens.js";
 import { clearCookies, setAuthCookies } from "../../utils/cookies.js";
 
-export const register = async (res: Response, req: Request) => {
+export const register = async (req: Request, res: Response) => {
     const { name, email, password } = req.body;
 
     const existingUser = await prisma.user.findUnique({
@@ -27,7 +27,7 @@ export const register = async (res: Response, req: Request) => {
     return res.status(StatusCodes.OK).json({ message: "User Created Successfully "});
 };
 
-export const login = async (res: Response, req: Request) => {
+export const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
     const user = await prisma.user.findUnique({
@@ -48,7 +48,7 @@ export const login = async (res: Response, req: Request) => {
     res.json({ success: true });
 };
 
-export const refresh = async (res: Response, req: Request) => {
+export const refresh = async (req: Request, res: Response) => {
     const token = req.cookies.refreshToken;
 
     if(!token) return res.status(StatusCodes.UNAUTHORIZED).json({ messaage: "Unathorized" });
