@@ -98,4 +98,5 @@ export const getMe = async (req: Request, res: Response) => {
     });
 
     if(!user) return res.status(StatusCodes.NOT_FOUND).json({ message: "User not found" });
+    return res.status(StatusCodes.OK).json(user);
 };
