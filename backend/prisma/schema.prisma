@@ -8,15 +8,24 @@ datasource db {
 }
 
 model User {
-  id       String @id @default(uuid())
+  id       String  @id @default(uuid())
   name     String
-  email    String @unique
+  email    String  @unique
   password String
+  bio      String?
+  image    String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   refreshToken RefreshToken[]
+
+  followers Follow[] @relation("followers")
+  following Follow[] @relation("following")
+
+  savedPosts SavedPosts[]
+
+  @@index([email])
 }
 
 model RefreshToken {
@@ -29,4 +38,28 @@ model RefreshToken {
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+model Follow {
+  id String @id @default(uuid())
+
+  followerId  String
+  followingId String
+
+  follower  User @relation("following", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("followers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+model SavedPosts {
+  id        String   @id @default(uuid())
+  userId    String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
