@@ -1,13 +1,9 @@
 import type { Request, Response } from "express"
-import { prisma } from "../../lib/prisma.js";
 import { StatusCodes } from "../../constants/statusCodes.js";
+import { prisma } from "../../lib/prisma.js";
 
-interface Params {
-    id: string
-}
-
-export const getUserProfile = async (req: Request<Params>, res: Response) => {
-    const { id } = req.params;
+export const getUserProfile = async (req: Request, res: Response) => {
+    const { id } = req.params as { id: string };
 
     if(!id) return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unathorized"});
 
