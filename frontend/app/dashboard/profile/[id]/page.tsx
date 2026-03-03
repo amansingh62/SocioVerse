@@ -1,25 +1,25 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import FollowButton from "@/app/components/FollowButton";
-import api from "@/app/lib/axios";
-import { Profile } from "@/app/types/profile";
+import { useProfileStore } from "@/app/store/profileStore";
 
 export default function UserProfilePage() {
   const { id } = useParams();
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const { profile, loading, fetchProfile } = useProfileStore();
 
   useEffect(() => {
-    const load = async () => {
-      const { data } = await api.get(`/user/${id}`);
-      setProfile(data);
-    };
+    if (!id) return;
 
-    load();
-  }, [id]);
+    if (profile?.id === id) return;
 
-  if (!profile) return <div>Loading...</div>;
+    fetchProfile(id as string);
+  }, [id, profile, fetchProfile]);
+
+  if (loading && !profile) return <div>Loading...</div>;
+
+  if (!profile) return null;
 
   return (
     <div className="max-w-xl space-y-6">
@@ -27,7 +27,9 @@ export default function UserProfilePage() {
         {profile.name}
       </h2>
 
-      <p>{profile.bio}</p>
+      <p className="text-gray-600 whitespace-pre-line">
+        {profile.bio}
+      </p>
 
       <div className="flex gap-6">
         <span>{profile.followersCount} Followers</span>

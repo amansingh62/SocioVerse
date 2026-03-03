@@ -7,23 +7,22 @@ import api from "@/app/lib/axios";
 import Image from "next/image";
 
 export default function MyProfilePage() {
-  const {
-    profile,
-    loading,
-    fetchProfile,
-    updateProfileData,
-  } = useProfileStore();
+  const { profile, loading, fetchProfile, updateProfileData } =
+    useProfileStore();
 
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     const load = async () => {
       const { data: me } = await api.get("/auth/me");
+
+      if (profile?.id === me.id) return;
+
       await fetchProfile(me.id);
     };
 
     load();
-  }, [fetchProfile]);
+  }, [fetchProfile, profile]);
 
   if (loading || !profile) {
     return <div className="p-10">Loading...</div>;
@@ -33,19 +32,17 @@ export default function MyProfilePage() {
     <div className="max-w-xl space-y-6">
       <div className="flex items-center gap-4">
         {profile.image && (
-        <Image
-  src={profile.image}
-  alt="Profile"
-  width={96}
-  height={96}
-  className="w-24 h-24 rounded-full object-cover"
-/>
+          <Image
+            src={profile.image}
+            alt="Profile"
+            width={96}
+            height={96}
+            className="w-24 h-24 rounded-full object-cover"
+          />
         )}
         <div>
-          <h2 className="text-2xl font-bold">
-            {profile.name}
-          </h2>
-          <p className="text-gray-600">{profile.bio}</p>
+          <h2 className="text-2xl font-bold">{profile.name}</h2>
+          <p className="text-gray-600 whitespace-pre-line">{profile.bio}</p>
         </div>
       </div>
 
