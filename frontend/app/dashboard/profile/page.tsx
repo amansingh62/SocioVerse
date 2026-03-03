@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import EditProfileModal from "../../components/EditProfileModal";
 import { useProfileStore } from "@/app/store/profileStore";
 import api from "@/app/lib/axios";
+import Image from "next/image";
 
 export default function MyProfilePage() {
   const {
@@ -32,10 +33,13 @@ export default function MyProfilePage() {
     <div className="max-w-xl space-y-6">
       <div className="flex items-center gap-4">
         {profile.image && (
-          <img
-            src={profile.image}
-            className="w-24 h-24 rounded-full object-cover"
-          />
+        <Image
+  src={profile.image}
+  alt="Profile"
+  width={96}
+  height={96}
+  className="w-24 h-24 rounded-full object-cover"
+/>
         )}
         <div>
           <h2 className="text-2xl font-bold">

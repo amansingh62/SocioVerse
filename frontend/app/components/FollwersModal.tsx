@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import api from "../lib/axios";
+import Image from "next/image";
 
 interface Follower {
   id: string;
@@ -36,10 +37,9 @@ export default function FollowersModal({
         {followers.map((f) => (
           <div key={f.id} className="flex items-center gap-3">
             {f.image && (
-              <img
+              <Image
                 src={f.image}
-                className="w-8 h-8 rounded-full"
-              />
+                className="w-8 h-8 rounded-full" alt={""}              />
             )}
             <span>{f.name}</span>
           </div>
