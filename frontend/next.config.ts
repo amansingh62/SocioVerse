@@ -1,7 +1,14 @@
 import type { NextConfig } from "next";
 
-const nextConfig: NextConfig = {
-  /* config options here */
+const nextConfig : NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "socioverse-media-storage-india.s3.amazonaws.com",
+      },
+    ],
+  },
 };
 
 export default nextConfig;

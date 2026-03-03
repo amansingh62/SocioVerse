@@ -3,7 +3,6 @@ import { StatusCodes } from "../../constants/statusCodes.js";
 import { prisma } from "../../lib/prisma.js";
 import { generateUploadURL } from "../../lib/s3.js";
 
-
 export const getUserProfile = async (req: Request, res: Response) => {
   const { id } = req.params as { id: string };
   const currentUser = req.userId;

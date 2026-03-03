@@ -2,12 +2,13 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import FollowButton from "@/components/FollowButton";
+import FollowButton from "@/app/components/FollowButton";
 import api from "@/app/lib/axios";
+import { Profile } from "@/app/types/profile";
 
 export default function UserProfilePage() {
   const { id } = useParams();
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
     const load = async () => {

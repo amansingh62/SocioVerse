@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { Profile } from "../types/profile";
+import api from "../lib/axios";
 
 interface ProfileState {
   profile: Profile | null;
@@ -7,7 +8,9 @@ interface ProfileState {
 
   setProfile: (profile: Profile) => void;
   setLoading: (value: boolean) => void;
+  fetchProfile: (id: string) => Promise<void>;
   updateFollowState: (isFollowing: boolean) => void;
+  updateProfileData: (data: Profile) => void;
   clearProfile: () => void;
 }
 
@@ -17,6 +20,16 @@ export const useProfileStore = create<ProfileState>((set) => ({
 
   setProfile: (profile) => set({ profile }),
   setLoading: (value) => set({ loading: value }),
+
+  fetchProfile: async (id) => {
+    set({ loading: true });
+    try {
+      const { data } = await api.get(`/user/${id}`);
+      set({ profile: data });
+    } finally {
+      set({ loading: false });
+    }
+  },
 
   updateFollowState: (isFollowing) =>
     set((state) =>
@@ -29,12 +42,19 @@ export const useProfileStore = create<ProfileState>((set) => ({
                 0,
                 isFollowing
                   ? state.profile.followersCount + 1
-                  : state.profile.followersCount - 1,
+                  : state.profile.followersCount - 1
               ),
             },
           }
-        : {},
+        : {}
     ),
+
+    updateProfileData: (data: Profile) =>
+  set((state) =>
+    state.profile
+      ? { profile: { ...state.profile, ...data } }
+      : {}
+  ),
 
   clearProfile: () => set({ profile: null }),
 }));

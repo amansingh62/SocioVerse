@@ -19,13 +19,18 @@ export default function EditProfileModal({
   const [preview, setPreview] = useState(profile.image || "");
   const [loading, setLoading] = useState(false);
 
-const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+const handleFile = async (
+  e: React.ChangeEvent<HTMLInputElement>
+): Promise<void> => {
   const file = e.target.files?.[0];
   if (!file) return;
 
-  const { data } = await api.get(
-    `/user/upload-url?fileType=${file.type}`
-  );
+  const { data } = await api.get<{
+    url: string;
+    key: string;
+  }>("/user/upload-url", {
+    params: { fileType: file.type },
+  });
 
   await fetch(data.url, {
     method: "PUT",
