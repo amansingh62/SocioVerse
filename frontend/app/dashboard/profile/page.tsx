@@ -41,7 +41,10 @@ export default function MyProfilePage() {
           />
         )}
         <div>
-          <h2 className="text-2xl font-bold">{profile.name}</h2>
+          <div>
+            <h2 className="text-2xl font-bold">{profile.name}</h2>
+            <p className="text-gray-500">@{profile.username}</p>
+          </div>
           <p className="text-gray-600 whitespace-pre-line">{profile.bio}</p>
         </div>
       </div>

@@ -42,19 +42,17 @@ export const useProfileStore = create<ProfileState>((set) => ({
                 0,
                 isFollowing
                   ? state.profile.followersCount + 1
-                  : state.profile.followersCount - 1
+                  : state.profile.followersCount - 1,
               ),
             },
           }
-        : {}
+        : {},
     ),
 
-    updateProfileData: (data: Profile) =>
-  set((state) =>
-    state.profile
-      ? { profile: { ...state.profile, ...data } }
-      : {}
-  ),
+  updateProfileData: (data: Profile) =>
+    set((state) =>
+      state.profile ? { profile: { ...state.profile, ...data } } : {},
+    ),
 
   clearProfile: () => set({ profile: null }),
 }));

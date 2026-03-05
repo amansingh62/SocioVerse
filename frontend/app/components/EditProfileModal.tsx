@@ -15,44 +15,60 @@ export default function EditProfileModal({
   onUpdate: (data: Profile) => void;
 }) {
   const [bio, setBio] = useState(profile.bio || "");
+  const [username, setUsername] = useState(profile.username || "");
   const [image, setImage] = useState(profile.image || "");
   const [preview, setPreview] = useState(profile.image || "");
   const [loading, setLoading] = useState(false);
 
-const handleFile = async (
-  e: React.ChangeEvent<HTMLInputElement>
-): Promise<void> => {
-  const file = e.target.files?.[0];
-  if (!file) return;
+  const MAX_FILE_SIZE = 5 * 1024 * 1024;
+  const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif"];
 
-  const { data } = await api.get<{
-    url: string;
-    key: string;
-  }>("/user/upload-url", {
-    params: { fileType: file.type },
-  });
+  const handleFile = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ): Promise<void> => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  await fetch(data.url, {
-    method: "PUT",
-    headers: {
-      "Content-Type": file.type,
-    },
-    body: file,
-  });
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      alert("Only JPG, PNG, WEBP, AVIF allowed.");
+      return;
+    }
 
-  const imageUrl = `https://${process.env.NEXT_PUBLIC_S3_BUCKET}.s3.amazonaws.com/${data.key}`;
+    if (file.size > MAX_FILE_SIZE) {
+      alert("File size must be less than 5MB.");
+      return;
+    }
 
-  setPreview(imageUrl);
-  setImage(imageUrl);
-};
+    const { data } = await api.get<{
+      url: string;
+      key: string;
+    }>("/user/upload-url", {
+      params: { fileType: file.type, fileSize: file.size },
+    });
+
+    await fetch(data.url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": file.type,
+      },
+      body: file,
+    });
+
+    const imageUrl = `https://${process.env.NEXT_PUBLIC_S3_BUCKET}.s3.amazonaws.com/${data.key}`;
+
+    setPreview(imageUrl);
+    setImage(imageUrl);
+  };
 
   const handleSave = async () => {
     setLoading(true);
     try {
       const { data } = await api.patch("/user/profile", {
+        username,
         bio,
         image,
       });
+
       onUpdate(data);
       onClose();
     } catch {
@@ -69,20 +85,29 @@ const handleFile = async (
 
         {preview && (
           <Image
-  src={preview}
-  alt="Profile"
-  width={96}
-  height={96}
-  className="w-24 h-24 rounded-full object-cover"
-/>
+            src={preview}
+            alt="Profile"
+            width={96}
+            height={96}
+            className="w-24 h-24 rounded-full object-cover"
+          />
         )}
 
         <input type="file" accept="image/*" onChange={handleFile} />
+
+        <input
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value.toLowerCase())}
+          className="border p-2 w-full"
+          placeholder="Username"
+        />
 
         <textarea
           className="border p-2 w-full"
           value={bio}
           onChange={(e) => setBio(e.target.value)}
+          placeholder="Bio"
         />
 
         <div className="flex justify-end gap-3">
