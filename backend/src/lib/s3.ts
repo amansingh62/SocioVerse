@@ -12,7 +12,7 @@ const s3 = new S3Client({
 });
 
 export const generateUploadURL = async (fileType: string) => {
-  const key = `profiles/${crypto.randomUUID()}`;
+  const key = `profiles/${crypto.randomUUID()}.${fileType.split("/")[1]}`;
 
   const command = new PutObjectCommand({
     Bucket: env.AWS_BUCKET_NAME,

@@ -6,25 +6,70 @@ import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from ".
 import { clearCookies, setAuthCookies } from "../../utils/cookies.js";
 
 export const register = async (req: Request, res: Response) => {
-    const { name, email, password } = req.body;
+  try {
+    const { name, username, email, password } = req.body;
 
-    const existingUser = await prisma.user.findUnique({
-        where: { email }
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [{ email }, { username }]
+      }
     });
 
-    if(existingUser) return res.status(StatusCodes.BAD_REQUEST).json({ message: "User already exists" });
+    if (existingUser) {
+      return res.status(StatusCodes.CONFLICT).json({
+        message: "Email or username already taken"
+      });
+    }
 
     const hashed = await hashPassword(password);
-    
+
     const user = await prisma.user.create({
-        data: {
-            name,
-            email,
-            password: hashed
-        },
+      data: {
+        name,
+        username,
+        email,
+        password: hashed
+      },
+      select: {
+        id: true,
+        name: true,
+        username: true,
+        email: true
+      }
     });
 
-    return res.status(StatusCodes.OK).json({ message: "User Created Successfully "});
+    return res.status(StatusCodes.CREATED).json({
+      message: "User created successfully",
+      user
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      message: "Invalid request data"
+    });
+  }
+};
+
+export const checkUsername = async (req: Request, res: Response) => {
+  try {
+    const username = req.query.username as string;
+
+    if (!username) {
+      return res.status(400).json({ available: false });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { username }
+    });
+
+    return res.json({ available: !user });
+
+  } catch (error) {
+    console.error("checkUsername error:", error);
+    return res.status(500).json({ available: false });
+  }
 };
 
 export const login = async (req: Request, res: Response) => {
@@ -92,6 +137,7 @@ export const getMe = async (req: Request, res: Response) => {
         select: {
             id: true,
             name: true,
+            username: true,
             email: true,
             createdAt: true
         },
