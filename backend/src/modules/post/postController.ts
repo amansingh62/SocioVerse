@@ -8,25 +8,31 @@ export const createPost = async (req: Request, res: Response) => {
   const userId = req.userId;
   const { content, mediaUrl, mediaType } = req.body;
 
-  const post = await prisma.post.create({
-    data: {
-      content,
-      mediaUrl,
-      mediaType,
-      authorId: userId as string,
-    },
-    include: {
-      author: {
-        select: {
-          id: true,
-          username: true,
-          image: true,
-        },
+ const post = await prisma.post.create({
+  data: {
+    content,
+    mediaUrl,
+    mediaType,
+    authorId: userId as string,
+  },
+  include: {
+    author: {
+      select: {
+        id: true,
+        username: true,
+        image: true,
       },
     },
-  });
+    _count: {
+      select: {
+        likes: true,
+        comments: true,
+      },
+    },
+  },
+});
 
-  return res.status(StatusCodes.CREATED).json({ post });
+  return res.status(StatusCodes.CREATED).json(post);
 };
 
 export const deletePost = async (req: Request, res: Response) => {
@@ -64,7 +70,7 @@ export const toggleLike = async (req: Request, res: Response) => {
   if (!userId)
     return res
       .status(StatusCodes.UNAUTHORIZED)
-      .json({ message: "Unathorized" });
+      .json({ message: "Unauthorized" });
 
   const existing = await prisma.like.findUnique({
     where: {
@@ -75,6 +81,8 @@ export const toggleLike = async (req: Request, res: Response) => {
     },
   });
 
+  let isLiked = false;
+
   if (existing) {
     await prisma.like.delete({
       where: {
@@ -84,6 +92,8 @@ export const toggleLike = async (req: Request, res: Response) => {
         },
       },
     });
+
+    isLiked = false;
   } else {
     await prisma.like.create({
       data: {
@@ -91,9 +101,11 @@ export const toggleLike = async (req: Request, res: Response) => {
         postId: id,
       },
     });
+
+    isLiked = true;
   }
 
-  res.json({ liked: true });
+  return res.json({ isLiked });
 };
 
 export const toggleSave = async (req: Request, res: Response) => {
@@ -226,34 +238,55 @@ export const getFeed = async (req: Request, res: Response) => {
   const followingIds = following.map((f) => f.followingId);
 
   const posts = await prisma.post.findMany({
-    where: {
-      authorId: { in: followingIds },
-    },
-    take: Number(limit),
-    skip: cursor ? 1 : 0,
-    ...(cursor && { cursor: { id: cursor as string } }),
-    orderBy: { createdAt: "desc" },
-    include: {
-      author: {
-        select: {
-          id: true,
-          username: true,
-          image: true,
-        },
-      },
-      _count: {
-        select: {
-          likes: true,
-          comments: true,
-        },
+  where: {
+    OR: [
+      { authorId: userId },
+      { authorId: { in: followingIds } }
+    ]
+  },
+  take: Number(limit) + 1,
+  skip: cursor ? 1 : 0,
+  ...(cursor && { cursor: { id: cursor as string } }),
+  orderBy: { createdAt: "desc" },
+  include: {
+    author: {
+      select: {
+        id: true,
+        username: true,
+        image: true,
       },
     },
-  });
+    _count: {
+      select: {
+        likes: true,
+        comments: true,
+      },
+    },
+    savedBy: {
+      where: {
+        userId: userId as string
+      },
+      select: {
+        id: true
+      }
+    }
+  },
+});
+
+const formattedPosts = posts.map(({ savedBy, ...post }) => ({
+  ...post,
+  isSaved: Boolean((savedBy as { id: string }[] | undefined)?.length),
+}));
 
   const nextCursor =
-    posts.length > 0 ? (posts[posts.length - 1]?.id ?? null) : null;
+    formattedPosts.length > 0
+      ? formattedPosts[formattedPosts.length - 1]?.id ?? null
+      : null;
 
-  return res.json({ posts, nextCursor });
+  return res.json({
+    posts: formattedPosts,
+    nextCursor
+})
 };
 
 export const getCloudinarySignature = async (
@@ -277,4 +310,40 @@ export const getCloudinarySignature = async (
     cloudName: env.CLOUDINARY_CLOUD,
     folder: "posts",
   });
+};
+
+export const getSavedPosts = async (req: Request, res: Response) => {
+  const userId = req.userId;
+
+  const saved = await prisma.savedPosts.findMany({
+    where: {
+      userId: userId as string
+    },
+    include: {
+      post: {
+        include: {
+          author: {
+            select: {
+              id: true,
+              username: true,
+              image: true
+            }
+          },
+          _count: {
+            select: {
+              likes: true,
+              comments: true
+            }
+          }
+        }
+      }
+    },
+    orderBy: {
+      createdAt: "desc"
+    }
+  });
+
+  const posts = saved.map((s) => s.post);
+
+  res.json({ posts });
 };

@@ -172,3 +172,33 @@ export const getFollowing = async (req: Request, res: Response) => {
 
   return res.status(200).json(following.map((f) => f.following));
 };
+
+export const getUserPosts = async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const posts = await prisma.post.findMany({
+    where: {
+      authorId: id as string
+    },
+    orderBy: {
+      createdAt: "desc"
+    },
+    include: {
+      author: {
+        select: {
+          id: true,
+          username: true,
+          image: true
+        }
+      },
+      _count: {
+        select: {
+          likes: true,
+          comments: true
+        }
+      }
+    }
+  });
+
+  res.json({ posts });
+};
