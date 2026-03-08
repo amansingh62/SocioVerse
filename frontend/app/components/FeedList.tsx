@@ -1,48 +1,51 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useFeedStore } from "../store/feedStore";
+import { usePostStore } from "../store/postStore";
 import PostCard from "./PostCard";
 
 export default function FeedList() {
-  const { posts, fetchFeed, loadMore, loading } = useFeedStore();
+const { postsById, feedIds, fetchFeed, loadMore, loading } =
+usePostStore();
 
-  const bottomRef = useRef<HTMLDivElement | null>(null);
+const posts = feedIds.map((id) => postsById[id]);
 
-  useEffect(() => {
-    fetchFeed();
-  }, [fetchFeed]);
+const bottomRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          loadMore();
-        }
-      },
-      { threshold: 1 }
-    );
+useEffect(() => {
+fetchFeed();
+}, [fetchFeed]);
 
-    if (bottomRef.current) {
-      observer.observe(bottomRef.current);
-    }
+useEffect(() => {
+const observer = new IntersectionObserver(
+(entries) => {
+if (entries[0].isIntersecting) {
+loadMore();
+}
+},
+{ threshold: 1 }
+);
 
-    return () => observer.disconnect();
-  }, [loadMore]);
+if (bottomRef.current) {
+  observer.observe(bottomRef.current);
+}
 
-  return (
-    <div className="space-y-4">
-      {posts.map((post) => (
-        <PostCard key={post.id} post={post} />
-      ))}
+return () => observer.disconnect();
 
-      <div ref={bottomRef} />
+}, [loadMore]);
 
-      {loading && (
-        <div className="text-center text-sm text-gray-500">
-          Loading more posts...
-        </div>
-      )}
+return ( <div className="space-y-4">
+{posts.map((post) =>
+post ? <PostCard key={post.id} post={post} /> : null
+)}
+
+  <div ref={bottomRef} />
+
+  {loading && (
+    <div className="text-center text-sm text-gray-500">
+      Loading more posts...
     </div>
-  );
+  )}
+</div>
+);
 }

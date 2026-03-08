@@ -14,7 +14,7 @@ export interface Post {
   author: PostAuthor;
   createdAt: string;
   isSaved: boolean;
-
+  isLiked: boolean;
   comments?: PostComment[];
   optimistic?: boolean;       
 
