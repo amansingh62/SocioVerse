@@ -16,6 +16,7 @@ export interface Post {
   isSaved: boolean;
   isLiked: boolean;
   comments?: PostComment[];
+  hasMoreComments?: boolean;
   optimistic?: boolean;       
 
   _count: {

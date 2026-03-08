@@ -28,6 +28,8 @@ interface PostState {
   loadMore: () => Promise<void>; 
 
   fetchProfilePosts: (userId: string) => Promise<void>;
+  fetchAllComments: (postId: string) => Promise<void>;
+  deleteComment: (commentId: string) => Promise<void>;
   fetchSavedPosts: () => Promise<void>;
 
   createPost: (payload: CreatePostPayload) => Promise<void>;
@@ -36,7 +38,7 @@ interface PostState {
   toggleSave: (postId: string) => Promise<void>;
   deletePost: (postId: string) => Promise<void>;
 
-  addComment: (postId: string, content: string) => Promise<void>;
+addComment: (postId: string, content: string, parentId?: string | null) => Promise<void>;
 }
 
 export const usePostStore = create<PostState>((set, get) => ({
@@ -90,7 +92,7 @@ export const usePostStore = create<PostState>((set, get) => ({
 
       return {
         postsById: { ...state.postsById, ...map },
-        feedIds: [...state.feedIds, ...ids],
+        feedIds: Array.from(new Set([...state.feedIds, ...ids])),
         nextCursor: data.nextCursor,
         loading: false,
       };
@@ -117,6 +119,42 @@ export const usePostStore = create<PostState>((set, get) => ({
       profileIds: ids,
     }));
   },
+
+  fetchAllComments: async (postId) => {
+  const { data } = await api.get(`/post/${postId}/comments`);
+
+  set((state) => {
+    const post = state.postsById[postId];
+    if (!post) return {};
+
+    return {
+      postsById: {
+        ...state.postsById,
+        [postId]: {
+          ...post,
+          comments: data.comments
+        }
+      }
+    };
+  });
+},
+
+deleteComment: async (commentId) => {
+  await api.delete(`/post/comment/${commentId}`);
+
+  set((state) => {
+    const posts = { ...state.postsById };
+
+    Object.values(posts).forEach((post) => {
+      if (!post.comments) return;
+
+      post.comments = post.comments.filter((c) => c.id !== commentId);
+      post._count.comments = Math.max(0, post._count.comments - 1);
+    });
+
+    return { postsById: posts };
+  });
+},
 
   fetchSavedPosts: async () => {
     const { data } = await api.get(`/post/saved`);
@@ -240,38 +278,45 @@ export const usePostStore = create<PostState>((set, get) => ({
     });
   },
 
-  addComment: async (postId, content) => {
-    const tempId = "temp-" + Date.now();
+  addComment: async (postId, content, parentId = null) => {
+  const tempId = "temp-" + Date.now();
 
-    const optimistic: PostComment = {
-      id: tempId,
-      content,
-      user: { id: "me", username: "You", image: null },
-      parentId: null,
-      createdAt: new Date().toISOString(),
-      optimistic: true,
-    };
+  const optimistic: PostComment = {
+    id: tempId,
+    content,
+    user: {
+      id: "me",
+      username: "You",
+      image: null,
+    },
+    parentId: null,
+    createdAt: new Date().toISOString(),
+    optimistic: true,
+  };
 
-    set((state) => {
-      const post = state.postsById[postId];
-      if (!post) return {};
+  set((state) => {
+    const post = state.postsById[postId];
+    if (!post) return {};
 
-      return {
-        postsById: {
-          ...state.postsById,
-          [postId]: {
-            ...post,
-            comments: [optimistic, ...(post.comments ?? [])],
-            _count: {
-              ...post._count,
-              comments: post._count.comments + 1,
-            },
+    return {
+      postsById: {
+        ...state.postsById,
+        [postId]: {
+          ...post,
+          comments: [optimistic, ...(post.comments ?? [])],
+          _count: {
+            ...post._count,
+            comments: post._count.comments + 1,
           },
         },
-      };
-    });
+      },
+    };
+  });
 
-    const { data } = await api.post(`/post/${postId}/comment`, { content });
+  try {
+    const { data } = await api.post(`/post/${postId}/comment`, { content, parentId });
+
+    const comment: PostComment = data.comment ?? data;
 
     set((state) => {
       const post = state.postsById[postId];
@@ -282,12 +327,15 @@ export const usePostStore = create<PostState>((set, get) => ({
           ...state.postsById,
           [postId]: {
             ...post,
-            comments: post.comments?.map((c) =>
-              c.id === tempId ? data : c
+            comments: (post.comments ?? []).map((c) =>
+              c.id === tempId ? comment : c
             ),
           },
         },
       };
     });
-  },
+  } catch (err) {
+    console.error(err);
+  }
+},
 }));
