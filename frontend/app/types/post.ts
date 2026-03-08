@@ -1,3 +1,5 @@
+import { PostComment } from "./comment";
+
 export interface PostAuthor {
     id: string;
     username: string;
@@ -5,15 +7,19 @@ export interface PostAuthor {
 };
 
 export interface Post {
-    id: string;
-    content: string;
-    mediaUrl: string | null;
-    mediaType : "IMAGE" | "VIDEO" | null;
-    author: PostAuthor;
-    createdAt: string;
+  id: string;
+  content: string;
+  mediaUrl: string | null;
+  mediaType: "IMAGE" | "VIDEO" | null;
+  author: PostAuthor;
+  createdAt: string;
+  isSaved: boolean;
 
-    _count: {
-        likes: number;
-        comments: number;
-    };
+  comments?: PostComment[];
+  optimistic?: boolean;       
+
+  _count: {
+    likes: number;
+    comments: number;
+  };
 }

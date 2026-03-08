@@ -1,28 +1,34 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { useAuth } from "@/app/hooks/useAuth";
-import { useAuthStore } from "@/app/store/authStore";
+import CreatePostModal from "../components/CreatePostModal";
+import FeedList from "../components/FeedList";
 
 export default function Dashboard() {
-  useAuth();
-  const router = useRouter();
-  const { user, isLoading } = useAuthStore();
-
-  useEffect(() => {
-    if (!isLoading && !user) {
-      router.push("/login");
-    }
-  }, [isLoading, user, router]);
-
-  if (isLoading) return <div>Loading...</div>;
-  if (!user) return null;
-
   return (
-    <div className="p-10">
-      <h1>Welcome {user.name}</h1>
-      <p>{user.email}</p>
+    <div className="max-w-[600px] mx-auto flex flex-col gap-7">
+
+      {/* Page header */}
+      <div>
+        <h1 className="font-display text-[42px] font-light text-[#1c1917] leading-none tracking-tight">
+          Your Feed
+        </h1>
+        <p className="text-[13px] text-[#a08070] mt-1.5">
+          What&apos;s happening in your world
+        </p>
+      </div>
+
+      {/* Create post */}
+      <CreatePostModal />
+
+      {/* Divider */}
+      <div className="flex items-center gap-3 text-[11px] text-[#a08070] tracking-[0.08em] uppercase">
+        <span className="flex-1 h-px bg-[rgba(201,150,122,0.18)]" />
+        <span>Recent posts</span>
+        <span className="flex-1 h-px bg-[rgba(201,150,122,0.18)]" />
+      </div>
+
+      {/* Feed */}
+      <FeedList />
     </div>
   );
 }
