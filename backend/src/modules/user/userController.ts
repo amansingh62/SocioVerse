@@ -180,9 +180,11 @@ export const getUserPosts = async (req: Request, res: Response) => {
     where: {
       authorId: id as string
     },
+
     orderBy: {
       createdAt: "desc"
     },
+
     include: {
       author: {
         select: {
@@ -191,6 +193,23 @@ export const getUserPosts = async (req: Request, res: Response) => {
           image: true
         }
       },
+
+      comments: {
+        take: 5,
+        orderBy: {
+          createdAt: "desc"
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              image: true
+            }
+          }
+        }
+      },
+
       _count: {
         select: {
           likes: true,
@@ -200,5 +219,10 @@ export const getUserPosts = async (req: Request, res: Response) => {
     }
   });
 
-  res.json({ posts });
+  const formattedPosts = posts.map((post) => ({
+    ...post,
+    hasMoreComments: post._count.comments > post.comments.length
+  }));
+
+  res.json({ posts: formattedPosts });
 };

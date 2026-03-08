@@ -193,7 +193,7 @@ export const addComment = async (req: Request, res: Response) => {
     },
   });
 
-  return res.status(StatusCodes.CREATED).json({ comment });
+  return res.status(StatusCodes.CREATED).json(comment);
 };
 
 export const deleteComment = async (
@@ -203,16 +203,38 @@ export const deleteComment = async (
   const userId = req.userId;
   const { id } = req.params as { id: string };
 
+  if (!userId) {
+    res.status(401).json({ message: "Unauthorized" });
+    return;
+  }
+
   const comment = await prisma.comment.findUnique({
     where: { id },
+    include: {
+      post: {
+        select: {
+          authorId: true,
+        },
+      },
+    },
   });
 
-  if (!comment || comment.userId !== userId) {
+  if (!comment) {
+    res.status(404).json({ message: "Comment not found" });
+    return;
+  }
+
+  const isCommentOwner = comment.userId === userId;
+  const isPostOwner = comment.post.authorId === userId;
+
+  if (!isCommentOwner && !isPostOwner) {
     res.status(403).json({ message: "Forbidden" });
     return;
   }
 
-  await prisma.comment.delete({ where: { id } });
+  await prisma.comment.delete({
+    where: { id },
+  });
 
   res.json({ message: "Deleted" });
 };
@@ -221,10 +243,11 @@ export const getFeed = async (req: Request, res: Response) => {
   const userId = req.userId;
   const { cursor, limit = 10 } = req.query;
 
-  if (!userId)
+  if (!userId) {
     return res
       .status(StatusCodes.UNAUTHORIZED)
       .json({ message: "Unauthorized" });
+  }
 
   const following = await prisma.follow.findMany({
     where: {
@@ -238,55 +261,81 @@ export const getFeed = async (req: Request, res: Response) => {
   const followingIds = following.map((f) => f.followingId);
 
   const posts = await prisma.post.findMany({
-  where: {
-    OR: [
-      { authorId: userId },
-      { authorId: { in: followingIds } }
-    ]
-  },
-  take: Number(limit) + 1,
-  skip: cursor ? 1 : 0,
-  ...(cursor && { cursor: { id: cursor as string } }),
-  orderBy: { createdAt: "desc" },
-  include: {
-    author: {
-      select: {
-        id: true,
-        username: true,
-        image: true,
-      },
+    where: {
+      OR: [
+        { authorId: userId },
+        { authorId: { in: followingIds } }
+      ]
     },
-    _count: {
-      select: {
-        likes: true,
-        comments: true,
-      },
+
+    take: Number(limit) + 1,
+    skip: cursor ? 1 : 0,
+    ...(cursor && { cursor: { id: cursor as string } }),
+
+    orderBy: {
+      createdAt: "desc"
     },
-    savedBy: {
-      where: {
-        userId: userId as string
+
+    include: {
+      author: {
+        select: {
+          id: true,
+          username: true,
+          image: true
+        }
       },
-      select: {
-        id: true
+
+      comments: {
+        take: 3,
+        orderBy: {
+          createdAt: "desc"
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              image: true
+            }
+          }
+        }
+      },
+
+      _count: {
+        select: {
+          likes: true,
+          comments: true
+        }
+      },
+
+      savedBy: {
+        where: {
+          userId: userId as string
+        },
+        select: {
+          id: true
+        }
       }
     }
-  },
-});
+  });
 
-const formattedPosts = posts.map(({ savedBy, ...post }) => ({
-  ...post,
-  isSaved: Boolean((savedBy as { id: string }[] | undefined)?.length),
-}));
+  const formattedPosts = posts.map(({ savedBy, comments, _count, ...post }) => ({
+    ...post,
+    comments,
+    _count,
+    isSaved: Boolean(savedBy?.length),
+    hasMoreComments: _count.comments > comments.length
+  }));
 
   const nextCursor =
-    formattedPosts.length > 0
-      ? formattedPosts[formattedPosts.length - 1]?.id ?? null
+    formattedPosts.length > Number(limit)
+      ? formattedPosts.pop()?.id ?? null
       : null;
 
   return res.json({
     posts: formattedPosts,
     nextCursor
-})
+  });
 };
 
 export const getCloudinarySignature = async (
@@ -346,4 +395,31 @@ export const getSavedPosts = async (req: Request, res: Response) => {
   const posts = saved.map((s) => s.post);
 
   res.json({ posts });
+};
+
+export const getPostComments = async (req: Request, res: Response) => {
+  const { id: postId } = req.params as { id: string };
+
+  const comments = await prisma.comment.findMany({
+    where: {
+      postId,
+      parentId: null
+    },
+
+    orderBy: {
+      createdAt: "desc"
+    },
+
+    include: {
+      user: {
+        select: {
+          id: true,
+          username: true,
+          image: true
+        }
+      }
+    }
+  });
+
+  return res.json({ comments });
 };
