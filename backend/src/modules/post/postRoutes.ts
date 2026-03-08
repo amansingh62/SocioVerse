@@ -1,12 +1,13 @@
 import { Router } from "express";
 import { requireAuth } from "../../middlewares/authMidleware.js";
 import { addComment, createPost, deleteComment, deletePost, 
-    getCloudinarySignature, getFeed, getPostComments, getSavedPosts, toggleLike, toggleSave } from "./postController.js";
+    getCloudinarySignature, getExploreFeed, getFeed, getPostComments, getSavedPosts, toggleLike, toggleSave } from "./postController.js";
 
 const router = Router();
 
 router.get("/cloudinary-signature", requireAuth, getCloudinarySignature);
 router.get("/feed", requireAuth, getFeed);
+router.get("/explore", requireAuth, getExploreFeed);
 router.get("/:id/comments", requireAuth, getPostComments);
 router.get("/saved", requireAuth, getSavedPosts);
 

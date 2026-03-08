@@ -338,6 +338,87 @@ export const getFeed = async (req: Request, res: Response) => {
   });
 };
 
+export const getExploreFeed = async (req: Request, res: Response) => {
+  const userId = req.userId;
+  const { cursor, limit = 10 } = req.query;
+
+  if (!userId) {
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ message: "Unauthorized" });
+  }
+
+  const posts = await prisma.post.findMany({
+    take: Number(limit) + 1,
+    skip: cursor ? 1 : 0,
+    ...(cursor && { cursor: { id: cursor as string } }),
+
+    orderBy: {
+      createdAt: "desc"
+    },
+
+    include: {
+      author: {
+        select: {
+          id: true,
+          username: true,
+          image: true
+        }
+      },
+
+      comments: {
+        take: 3,
+        orderBy: {
+          createdAt: "desc"
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              image: true
+            }
+          }
+        }
+      },
+
+      _count: {
+        select: {
+          likes: true,
+          comments: true
+        }
+      },
+
+      savedBy: {
+        where: {
+          userId: userId as string
+        },
+        select: {
+          id: true
+        }
+      }
+    }
+  });
+
+  const formattedPosts = posts.map(({ savedBy, comments, _count, ...post }) => ({
+    ...post,
+    comments,
+    _count,
+    isSaved: Boolean(savedBy?.length),
+    hasMoreComments: _count.comments > comments.length
+  }));
+
+  const nextCursor =
+    formattedPosts.length > Number(limit)
+      ? formattedPosts.pop()?.id ?? null
+      : null;
+
+  return res.json({
+    posts: formattedPosts,
+    nextCursor
+  });
+};
+
 export const getCloudinarySignature = async (
   req: Request,
   res: Response
