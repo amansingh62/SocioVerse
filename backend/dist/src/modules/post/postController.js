@@ -1,0 +1,513 @@
+import { StatusCodes } from "../../constants/statusCodes.js";
+import { prisma } from "../../lib/prisma.js";
+import cloudinary from "../../lib/cloudinary.js";
+import { env } from "../../config/env.js";
+import { getIO } from "../../lib/websocket.js";
+export const createPost = async (req, res) => {
+    const userId = req.userId;
+    const { content, mediaUrl, mediaType } = req.body;
+    const post = await prisma.post.create({
+        data: {
+            content,
+            mediaUrl,
+            mediaType,
+            authorId: userId,
+        },
+        include: {
+            author: {
+                select: {
+                    id: true,
+                    username: true,
+                    image: true,
+                },
+            },
+            _count: {
+                select: {
+                    likes: true,
+                    comments: true,
+                },
+            },
+        },
+    });
+    const io = getIO();
+    io.emit("post:created", post);
+    return res.status(StatusCodes.CREATED).json(post);
+};
+export const deletePost = async (req, res) => {
+    const userId = req.userId;
+    const { id } = req.params;
+    if (!userId) {
+        return res
+            .status(StatusCodes.UNAUTHORIZED)
+            .json({ message: "Unauthorized" });
+    }
+    const result = await prisma.post.deleteMany({
+        where: {
+            id,
+            authorId: userId,
+        },
+    });
+    if (result.count === 0) {
+        return res
+            .status(StatusCodes.FORBIDDEN)
+            .json({ message: "Post not found or not allowed" });
+    }
+    return res.status(StatusCodes.OK).json({
+        message: "Post deleted successfully",
+    });
+};
+export const toggleLike = async (req, res) => {
+    const userId = req.userId;
+    const { id } = req.params;
+    if (!userId)
+        return res
+            .status(StatusCodes.UNAUTHORIZED)
+            .json({ message: "Unauthorized" });
+    const post = await prisma.post.findUnique({
+        where: { id },
+        select: { authorId: true },
+    });
+    if (!post) {
+        return res
+            .status(StatusCodes.NOT_FOUND)
+            .json({ message: "Post not found" });
+    }
+    const existing = await prisma.like.findUnique({
+        where: {
+            userId_postId: {
+                userId,
+                postId: id,
+            },
+        },
+    });
+    let isLiked = false;
+    if (existing) {
+        await prisma.like.delete({
+            where: {
+                userId_postId: {
+                    userId,
+                    postId: id,
+                },
+            },
+        });
+        isLiked = false;
+    }
+    else {
+        await prisma.like.create({
+            data: {
+                userId,
+                postId: id,
+            },
+        });
+        isLiked = true;
+    }
+    const io = getIO();
+    if (isLiked && post.authorId !== userId) {
+        const notification = await prisma.notification.create({
+            data: {
+                type: "LIKE",
+                userId: post.authorId,
+                actorId: userId,
+                postId: id,
+            },
+            include: {
+                actor: {
+                    select: {
+                        id: true,
+                        username: true,
+                        image: true,
+                    },
+                },
+            },
+        });
+        io.to(`user:${post.authorId}`).emit("notification", notification);
+        io.emit("post:liked", {
+            postId: id,
+        });
+    }
+    return res.json({ isLiked });
+};
+export const toggleSave = async (req, res) => {
+    const userId = req.userId;
+    const { id } = req.params;
+    if (!userId)
+        return res
+            .status(StatusCodes.UNAUTHORIZED)
+            .json({ message: "Unathorizedd" });
+    const existing = await prisma.savedPosts.findUnique({
+        where: {
+            userId_postId: {
+                userId,
+                postId: id,
+            },
+        },
+    });
+    if (existing) {
+        await prisma.savedPosts.delete({
+            where: {
+                userId_postId: {
+                    userId,
+                    postId: id,
+                },
+            },
+        });
+    }
+    else {
+        await prisma.savedPosts.create({
+            data: {
+                userId,
+                postId: id,
+            },
+        });
+    }
+    return res.json({ saved: true });
+};
+export const addComment = async (req, res) => {
+    const userId = req.userId;
+    const { id: postId } = req.params;
+    const { content, parentId } = req.body;
+    if (!userId) {
+        return res
+            .status(StatusCodes.UNAUTHORIZED)
+            .json({ message: "Unauthorized" });
+    }
+    if (!content || !content.trim()) {
+        return res
+            .status(StatusCodes.BAD_REQUEST)
+            .json({ message: "Comment content is required" });
+    }
+    const post = await prisma.post.findUnique({
+        where: { id: postId },
+        select: { id: true, authorId: true },
+    });
+    if (!post) {
+        return res
+            .status(StatusCodes.NOT_FOUND)
+            .json({ message: "Post not found" });
+    }
+    const comment = await prisma.comment.create({
+        data: {
+            content: content.trim(),
+            userId,
+            postId,
+            parentId: parentId ?? null,
+        },
+        include: {
+            user: {
+                select: {
+                    id: true,
+                    username: true,
+                    image: true,
+                },
+            },
+        },
+    });
+    const io = getIO();
+    if (post.authorId !== userId) {
+        const notification = await prisma.notification.create({
+            data: {
+                type: "COMMENT",
+                userId: post.authorId,
+                actorId: userId,
+                postId,
+                commentId: comment.id,
+            },
+            include: {
+                actor: {
+                    select: {
+                        id: true,
+                        username: true,
+                        image: true,
+                    },
+                },
+            },
+        });
+        io.to(`user:${post.authorId}`).emit("notification", {
+            ...notification,
+            commentContent: comment.content,
+        });
+        io.emit("comment:created", {
+            postId,
+            comment,
+        });
+    }
+    return res.status(StatusCodes.CREATED).json(comment);
+};
+export const deleteComment = async (req, res) => {
+    const userId = req.userId;
+    const { id } = req.params;
+    if (!userId) {
+        res.status(401).json({ message: "Unauthorized" });
+        return;
+    }
+    const comment = await prisma.comment.findUnique({
+        where: { id },
+        include: {
+            post: {
+                select: {
+                    authorId: true,
+                },
+            },
+        },
+    });
+    if (!comment) {
+        res.status(404).json({ message: "Comment not found" });
+        return;
+    }
+    const isCommentOwner = comment.userId === userId;
+    const isPostOwner = comment.post.authorId === userId;
+    if (!isCommentOwner && !isPostOwner) {
+        res.status(403).json({ message: "Forbidden" });
+        return;
+    }
+    await prisma.comment.delete({
+        where: { id },
+    });
+    res.json({ message: "Deleted" });
+};
+export const getFeed = async (req, res) => {
+    const userId = req.userId;
+    const { cursor, limit = 10 } = req.query;
+    if (!userId) {
+        return res
+            .status(StatusCodes.UNAUTHORIZED)
+            .json({ message: "Unauthorized" });
+    }
+    const following = await prisma.follow.findMany({
+        where: {
+            followerId: userId,
+        },
+        select: {
+            followingId: true,
+        },
+    });
+    const followingIds = following.map((f) => f.followingId);
+    const posts = await prisma.post.findMany({
+        where: {
+            OR: [{ authorId: userId }, { authorId: { in: followingIds } }],
+        },
+        take: Number(limit) + 1,
+        skip: cursor ? 1 : 0,
+        ...(cursor && { cursor: { id: cursor } }),
+        orderBy: {
+            createdAt: "desc",
+        },
+        include: {
+            author: {
+                select: {
+                    id: true,
+                    username: true,
+                    image: true,
+                },
+            },
+            comments: {
+                take: 3,
+                orderBy: {
+                    createdAt: "desc",
+                },
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            username: true,
+                            image: true,
+                        },
+                    },
+                },
+            },
+            _count: {
+                select: {
+                    likes: true,
+                    comments: true,
+                },
+            },
+            savedBy: {
+                where: {
+                    userId: userId,
+                },
+                select: {
+                    id: true,
+                },
+            },
+        },
+    });
+    const formattedPosts = posts.map(({ id, savedBy, comments, _count, ...post }) => ({
+        id,
+        ...post,
+        comments,
+        _count,
+        isSaved: Boolean(savedBy?.length),
+        hasMoreComments: _count.comments > comments.length,
+    }));
+    const nextCursor = formattedPosts.length > Number(limit)
+        ? (formattedPosts.pop()?.id ?? null)
+        : null;
+    return res.json({
+        posts: formattedPosts,
+        nextCursor,
+    });
+};
+export const getExploreFeed = async (req, res) => {
+    const userId = req.userId;
+    const { cursor, limit = 10 } = req.query;
+    if (!userId) {
+        return res
+            .status(StatusCodes.UNAUTHORIZED)
+            .json({ message: "Unauthorized" });
+    }
+    const posts = await prisma.post.findMany({
+        take: Number(limit) + 1,
+        skip: cursor ? 1 : 0,
+        ...(cursor && { cursor: { id: cursor } }),
+        orderBy: {
+            createdAt: "desc",
+        },
+        include: {
+            author: {
+                select: {
+                    id: true,
+                    username: true,
+                    image: true,
+                },
+            },
+            comments: {
+                take: 3,
+                orderBy: {
+                    createdAt: "desc",
+                },
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            username: true,
+                            image: true,
+                        },
+                    },
+                },
+            },
+            _count: {
+                select: {
+                    likes: true,
+                    comments: true,
+                },
+            },
+            savedBy: {
+                where: {
+                    userId: userId,
+                },
+                select: {
+                    id: true,
+                },
+            },
+        },
+    });
+    const formattedPosts = posts.map(({ savedBy, comments, _count, ...post }) => ({
+        ...post,
+        comments,
+        _count,
+        isSaved: Boolean(savedBy?.length),
+        hasMoreComments: _count.comments > comments.length,
+    }));
+    const nextCursor = formattedPosts.length > Number(limit)
+        ? (formattedPosts.pop()?.id ?? null)
+        : null;
+    return res.json({
+        posts: formattedPosts,
+        nextCursor,
+    });
+};
+export const getCloudinarySignature = async (req, res) => {
+    const timestamp = Math.round(new Date().getTime() / 1000);
+    const signature = cloudinary.utils.api_sign_request({
+        timestamp,
+        folder: "posts",
+    }, env.CLOUDINARY_API_SECRET);
+    res.json({
+        timestamp,
+        signature,
+        apiKey: env.CLOUDINARY_API_KEY,
+        cloudName: env.CLOUDINARY_CLOUD,
+        folder: "posts",
+    });
+};
+export const getSavedPosts = async (req, res) => {
+    const userId = req.userId;
+    const saved = await prisma.savedPosts.findMany({
+        where: {
+            userId: userId,
+        },
+        include: {
+            post: {
+                include: {
+                    author: {
+                        select: {
+                            id: true,
+                            username: true,
+                            image: true,
+                        },
+                    },
+                    _count: {
+                        select: {
+                            likes: true,
+                            comments: true,
+                        },
+                    },
+                },
+            },
+        },
+        orderBy: {
+            createdAt: "desc",
+        },
+    });
+    const posts = saved.map((s) => s.post);
+    res.json({ posts });
+};
+export const getPostComments = async (req, res) => {
+    const { id: postId } = req.params;
+    const comments = await prisma.comment.findMany({
+        where: {
+            postId,
+            parentId: null,
+        },
+        orderBy: {
+            createdAt: "desc",
+        },
+        include: {
+            user: {
+                select: {
+                    id: true,
+                    username: true,
+                    image: true,
+                },
+            },
+        },
+    });
+    return res.json({ comments });
+};
+export const getNotifications = async (req, res) => {
+    const userId = req.userId;
+    if (!userId)
+        return res
+            .status(StatusCodes.UNAUTHORIZED)
+            .json({ message: "Unathorized" });
+    const notifications = await prisma.notification.findMany({
+        where: { userId },
+        orderBy: { createdAt: "desc" },
+        include: {
+            actor: {
+                select: {
+                    id: true,
+                    username: true,
+                    image: true,
+                },
+            },
+            comment: {
+                select: {
+                    content: true,
+                },
+            },
+        },
+    });
+    res.json({ notifications });
+};
+//# sourceMappingURL=postController.js.map
