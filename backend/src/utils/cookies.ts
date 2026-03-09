@@ -4,7 +4,7 @@ const cookieOptions = {
   httpOnly: true,
   secure: true,
   path: "/",
-  sameSite: "none" as const
+  sameSite: "lax" as const
 };
 
 export const setAuthCookies = (
