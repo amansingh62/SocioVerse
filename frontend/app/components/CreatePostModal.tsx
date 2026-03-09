@@ -6,8 +6,6 @@ import { uploadToCloudinary } from "@/app/lib/uploadCloudinary";
 import Image from "next/image";
 import { useAuthStore } from "@/app/store/authStore";
 
-const QUICK_EMOJIS = ["😊", "✨", "🌿", "🔥", "💫", "🙌"];
-
 export default function CreatePostModal() {
 const createPost = usePostStore((s) => s.createPost);
 const user = useAuthStore((s) => s.user);
@@ -164,27 +162,6 @@ return ( <div className="glass-card rounded-3xl p-6 flex flex-col gap-4 post-car
           className="hidden"
         />
       </label>
-
-      {/* Emoji */}
-      <div className="flex gap-1">
-        {QUICK_EMOJIS.map((emoji) => (
-          <button
-            key={emoji}
-            onClick={() => insertEmoji(emoji)}
-            className="
-            w-8 h-8 rounded-[10px]
-            border border-[rgba(201,150,122,0.14)]
-            bg-[rgba(255,253,249,0.5)]
-            hover:bg-[rgba(201,150,122,0.08)]
-            hover:scale-110
-            transition-all duration-150
-            flex items-center justify-center
-          "
-          >
-            {emoji}
-          </button>
-        ))}
-      </div>
 
     </div>
 

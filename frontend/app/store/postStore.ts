@@ -297,7 +297,6 @@ export const usePostStore = create<PostState>((set, get) => ({
 
       const comment: PostComment = data.comment ?? data;
 
-      // Mark this id so the socket listener skips it
       recentCommentIds.add(comment.id);
       setTimeout(() => recentCommentIds.delete(comment.id), 5000);
 
@@ -332,10 +331,6 @@ export const usePostStore = create<PostState>((set, get) => ({
   initSocketListeners: () => {
     const socket = getSocket();
     if (!socket) return;
-
-    socket.onAny((event, data) => {
-      console.log("SOCKET EVENT:", event, data);
-    });
 
     const addNotification = useNotificationStore.getState().addNotification;
 
@@ -387,14 +382,12 @@ export const usePostStore = create<PostState>((set, get) => ({
     });
 
     socket.on("comment:created", ({ postId, comment }) => {
-      // Skip if addComment already inserted this comment
       if (recentCommentIds.has(comment.id)) return;
 
       set((state) => {
         const post = state.postsById[postId];
         if (!post) return {};
 
-        // Guard against duplicate comments already added by addComment
         const alreadyExists = (post.comments ?? []).some(
           (c) => c.id === comment.id
         );
