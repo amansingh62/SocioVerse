@@ -5,6 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import api from "../lib/axios";
 import { useAuthStore } from "@/app/store/authStore";
+import { initSocket } from "../lib/socket";
+import { usePostStore } from "../store/postStore";
 
 const NAV_ITEMS = [
   {
@@ -28,21 +30,11 @@ const NAV_ITEMS = [
     ),
   },
   {
-    href: "/dashboard/messages",
-    label: "Messages",
+    href: "/dashboard/notifications",
+    label: "Notifications",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-[18px] h-[18px]">
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-      </svg>
-    ),
-  },
-  {
-    href: "/dashboard/ads",
-    label: "Ads",
-    icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-[18px] h-[18px]">
-        <rect x="2" y="7" width="20" height="14" rx="2" />
-        <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" />
       </svg>
     ),
   },
@@ -58,6 +50,25 @@ export default function DashboardLayout({
   const { fetchMe, isLoading, user } = useAuthStore();
 
   useEffect(() => { fetchMe(); }, [fetchMe]);
+
+const initSocketListeners = usePostStore(
+  (s) => s.initSocketListeners
+);
+
+useEffect(() => {
+  if (!user) return;
+
+  const socket = initSocket();
+  console.log("Connecting socket for user:", user.id);
+
+  if (!socket) return;
+
+  initSocketListeners();
+
+  return () => {
+    socket.disconnect();
+  };
+}, [user]);
 
   const handleLogout = async () => {
     await api.post("/auth/logout");

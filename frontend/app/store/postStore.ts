@@ -2,6 +2,14 @@ import { create } from "zustand";
 import { Post } from "../types/post";
 import { PostComment } from "../types/comment";
 import api from "../lib/axios";
+import { getSocket } from "../lib/socket";
+import { useNotificationStore } from "./notificationStore";
+
+const unique = (arr: string[]) => Array.from(new Set(arr));
+
+const recentCommentIds = new Set<string>();
+const recentPostIds = new Set<string>();
+const recentLikedPostIds = new Set<string>();
 
 interface CreatePostPayload {
   content: string;
@@ -20,12 +28,14 @@ interface PostState {
   feedIds: string[];
   profileIds: string[];
   savedIds: string[];
+  exploreIds: string[];
 
   nextCursor: string | null;
   loading: boolean;
 
   fetchFeed: () => Promise<void>;
-  loadMore: () => Promise<void>; 
+  fetchExploreFeed: () => Promise<void>;
+  loadMore: () => Promise<void>;
 
   fetchProfilePosts: (userId: string) => Promise<void>;
   fetchAllComments: (postId: string) => Promise<void>;
@@ -38,7 +48,13 @@ interface PostState {
   toggleSave: (postId: string) => Promise<void>;
   deletePost: (postId: string) => Promise<void>;
 
-addComment: (postId: string, content: string, parentId?: string | null) => Promise<void>;
+  addComment: (
+    postId: string,
+    content: string,
+    parentId?: string | null
+  ) => Promise<void>;
+
+  initSocketListeners: () => void;
 }
 
 export const usePostStore = create<PostState>((set, get) => ({
@@ -47,6 +63,7 @@ export const usePostStore = create<PostState>((set, get) => ({
   feedIds: [],
   profileIds: [],
   savedIds: [],
+  exploreIds: [],
 
   nextCursor: null,
   loading: false,
@@ -64,44 +81,61 @@ export const usePostStore = create<PostState>((set, get) => ({
 
     set((state) => ({
       postsById: { ...state.postsById, ...map },
-      feedIds: ids,
+      feedIds: unique(ids),
+      nextCursor: data.nextCursor,
+    }));
+  },
+
+  fetchExploreFeed: async () => {
+    const { data } = await api.get("/post/explore");
+
+    const map: Record<string, Post> = {};
+    const ids: string[] = [];
+
+    data.posts.forEach((p: Post) => {
+      map[p.id] = p;
+      ids.push(p.id);
+    });
+
+    set((state) => ({
+      postsById: { ...state.postsById, ...map },
+      exploreIds: unique(ids),
       nextCursor: data.nextCursor,
     }));
   },
 
   loadMore: async () => {
-  const { nextCursor, loading } = get();
+    const { nextCursor, loading } = get();
+    if (!nextCursor || loading) return;
 
-  if (!nextCursor || loading) return;
+    set({ loading: true });
 
-  set({ loading: true });
-
-  try {
-    const { data } = await api.get("/post/feed", {
-      params: { cursor: nextCursor },
-    });
-
-    set((state) => {
-      const map: Record<string, Post> = {};
-      const ids: string[] = [];
-
-      data.posts.forEach((p: Post) => {
-        map[p.id] = p;
-        ids.push(p.id);
+    try {
+      const { data } = await api.get("/post/feed", {
+        params: { cursor: nextCursor },
       });
 
-      return {
-        postsById: { ...state.postsById, ...map },
-        feedIds: Array.from(new Set([...state.feedIds, ...ids])),
-        nextCursor: data.nextCursor,
-        loading: false,
-      };
-    });
-  } catch (err) {
-    console.error(err);
-    set({ loading: false });
-  }
-},
+      set((state) => {
+        const map: Record<string, Post> = {};
+        const ids: string[] = [];
+
+        data.posts.forEach((p: Post) => {
+          map[p.id] = p;
+          ids.push(p.id);
+        });
+
+        return {
+          postsById: { ...state.postsById, ...map },
+          feedIds: unique([...state.feedIds, ...ids]),
+          nextCursor: data.nextCursor,
+          loading: false,
+        };
+      });
+    } catch (err) {
+      console.error(err);
+      set({ loading: false });
+    }
+  },
 
   fetchProfilePosts: async (userId) => {
     const { data } = await api.get(`/user/${userId}/posts`);
@@ -116,45 +150,45 @@ export const usePostStore = create<PostState>((set, get) => ({
 
     set((state) => ({
       postsById: { ...state.postsById, ...map },
-      profileIds: ids,
+      profileIds: unique(ids),
     }));
   },
 
   fetchAllComments: async (postId) => {
-  const { data } = await api.get(`/post/${postId}/comments`);
+    const { data } = await api.get(`/post/${postId}/comments`);
 
-  set((state) => {
-    const post = state.postsById[postId];
-    if (!post) return {};
+    set((state) => {
+      const post = state.postsById[postId];
+      if (!post) return {};
 
-    return {
-      postsById: {
-        ...state.postsById,
-        [postId]: {
-          ...post,
-          comments: data.comments
-        }
-      }
-    };
-  });
-},
-
-deleteComment: async (commentId) => {
-  await api.delete(`/post/comment/${commentId}`);
-
-  set((state) => {
-    const posts = { ...state.postsById };
-
-    Object.values(posts).forEach((post) => {
-      if (!post.comments) return;
-
-      post.comments = post.comments.filter((c) => c.id !== commentId);
-      post._count.comments = Math.max(0, post._count.comments - 1);
+      return {
+        postsById: {
+          ...state.postsById,
+          [postId]: {
+            ...post,
+            comments: data.comments,
+          },
+        },
+      };
     });
+  },
 
-    return { postsById: posts };
-  });
-},
+  deleteComment: async (commentId) => {
+    await api.delete(`/post/comment/${commentId}`);
+
+    set((state) => {
+      const posts = { ...state.postsById };
+
+      Object.values(posts).forEach((post) => {
+        if (!post.comments) return;
+
+        post.comments = post.comments.filter((c) => c.id !== commentId);
+        post._count.comments = Math.max(0, post._count.comments - 1);
+      });
+
+      return { postsById: posts };
+    });
+  },
 
   fetchSavedPosts: async () => {
     const { data } = await api.get(`/post/saved`);
@@ -169,61 +203,37 @@ deleteComment: async (commentId) => {
 
     set((state) => ({
       postsById: { ...state.postsById, ...map },
-      savedIds: ids,
+      savedIds: unique(ids),
     }));
   },
 
   createPost: async (payload) => {
-    const tempId = "temp-" + Date.now();
-
-    const optimisticPost: Post = {
-      id: tempId,
-      content: payload.content,
-      mediaUrl: payload.mediaUrl ?? null,
-      mediaType: payload.mediaType ?? null,
-      createdAt: new Date().toISOString(),
-      isSaved: false,
-      isLiked: false,
-      author: payload.author,
-      comments: [],
-      optimistic: true,
-      _count: { likes: 0, comments: 0 },
-    };
-
-    set((state) => ({
-      postsById: { ...state.postsById, [tempId]: optimisticPost },
-      feedIds: [tempId, ...state.feedIds],
-    }));
-
     try {
       const { data } = await api.post("/post", payload);
 
-      set((state) => {
-        const newPosts = { ...state.postsById };
-        delete newPosts[tempId];
-        newPosts[data.id] = data;
+      recentPostIds.add(data.id);
+      setTimeout(() => recentPostIds.delete(data.id), 5000);
 
-        return {
-          postsById: newPosts,
-          feedIds: state.feedIds.map((id) => (id === tempId ? data.id : id)),
-        };
-      });
-    } catch {
       set((state) => ({
-        feedIds: state.feedIds.filter((id) => id !== tempId),
+        postsById: { ...state.postsById, [data.id]: data },
+        feedIds: unique([data.id, ...state.feedIds]),
       }));
+    } catch (err) {
+      console.error(err);
     }
   },
 
   toggleLike: async (postId) => {
     const { data } = await api.post(`/post/${postId}/like`);
 
+    recentLikedPostIds.add(postId);
+    setTimeout(() => recentLikedPostIds.delete(postId), 5000);
+
     set((state) => {
       const post = state.postsById[postId];
       if (!post) return {};
 
-      const diff =
-        post.isLiked === data.isLiked ? 0 : data.isLiked ? 1 : -1;
+      const diff = post.isLiked === data.isLiked ? 0 : data.isLiked ? 1 : -1;
 
       return {
         postsById: {
@@ -256,7 +266,7 @@ deleteComment: async (commentId) => {
           [postId]: { ...post, isSaved: saved },
         },
         savedIds: saved
-          ? [...state.savedIds, postId]
+          ? unique([...state.savedIds, postId])
           : state.savedIds.filter((id) => id !== postId),
       };
     });
@@ -279,63 +289,131 @@ deleteComment: async (commentId) => {
   },
 
   addComment: async (postId, content, parentId = null) => {
-  const tempId = "temp-" + Date.now();
+    try {
+      const { data } = await api.post(`/post/${postId}/comment`, {
+        content,
+        parentId,
+      });
 
-  const optimistic: PostComment = {
-    id: tempId,
-    content,
-    user: {
-      id: "me",
-      username: "You",
-      image: null,
-    },
-    parentId: null,
-    createdAt: new Date().toISOString(),
-    optimistic: true,
-  };
+      const comment: PostComment = data.comment ?? data;
 
-  set((state) => {
-    const post = state.postsById[postId];
-    if (!post) return {};
+      // Mark this id so the socket listener skips it
+      recentCommentIds.add(comment.id);
+      setTimeout(() => recentCommentIds.delete(comment.id), 5000);
 
-    return {
-      postsById: {
-        ...state.postsById,
-        [postId]: {
-          ...post,
-          comments: [optimistic, ...(post.comments ?? [])],
-          _count: {
-            ...post._count,
-            comments: post._count.comments + 1,
+      set((state) => {
+        const post = state.postsById[postId];
+        if (!post) return {};
+
+        const alreadyExists = (post.comments ?? []).some(
+          (c) => c.id === comment.id
+        );
+        if (alreadyExists) return state;
+
+        return {
+          postsById: {
+            ...state.postsById,
+            [postId]: {
+              ...post,
+              comments: [comment, ...(post.comments ?? [])],
+              _count: {
+                ...post._count,
+                comments: post._count.comments + 1,
+              },
+            },
           },
-        },
-      },
-    };
-  });
+        };
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  },
 
-  try {
-    const { data } = await api.post(`/post/${postId}/comment`, { content, parentId });
+  initSocketListeners: () => {
+    const socket = getSocket();
+    if (!socket) return;
 
-    const comment: PostComment = data.comment ?? data;
-
-    set((state) => {
-      const post = state.postsById[postId];
-      if (!post) return {};
-
-      return {
-        postsById: {
-          ...state.postsById,
-          [postId]: {
-            ...post,
-            comments: (post.comments ?? []).map((c) =>
-              c.id === tempId ? comment : c
-            ),
-          },
-        },
-      };
+    socket.onAny((event, data) => {
+      console.log("SOCKET EVENT:", event, data);
     });
-  } catch (err) {
-    console.error(err);
-  }
-},
+
+    const addNotification = useNotificationStore.getState().addNotification;
+
+    socket.off("post:created");
+    socket.off("post:liked");
+    socket.off("comment:created");
+    socket.off("notification");
+
+    socket.on("notification", async (data) => {
+      await addNotification(data);
+    });
+
+    socket.on("post:created", (post) => {
+      if (recentPostIds.has(post.id)) return;
+
+      set((state) => {
+        if (state.postsById[post.id]) return state;
+
+        return {
+          postsById: {
+            ...state.postsById,
+            [post.id]: post,
+          },
+          feedIds: unique([post.id, ...state.feedIds]),
+        };
+      });
+    });
+
+    socket.on("post:liked", ({ postId }) => {
+      if (recentLikedPostIds.has(postId)) return;
+
+      set((state) => {
+        const post = state.postsById[postId];
+        if (!post) return {};
+
+        return {
+          postsById: {
+            ...state.postsById,
+            [postId]: {
+              ...post,
+              _count: {
+                ...post._count,
+                likes: post._count.likes + (post.isLiked ? -1 : 1),
+              },
+            },
+          },
+        };
+      });
+    });
+
+    socket.on("comment:created", ({ postId, comment }) => {
+      // Skip if addComment already inserted this comment
+      if (recentCommentIds.has(comment.id)) return;
+
+      set((state) => {
+        const post = state.postsById[postId];
+        if (!post) return {};
+
+        // Guard against duplicate comments already added by addComment
+        const alreadyExists = (post.comments ?? []).some(
+          (c) => c.id === comment.id
+        );
+        if (alreadyExists) return state;
+
+        return {
+          postsById: {
+            ...state.postsById,
+            [postId]: {
+              ...post,
+              comments: [comment, ...(post.comments ?? [])],
+              _count: {
+                ...post._count,
+                comments: post._count.comments + 1,
+              },
+            },
+          },
+        };
+      });
+    });
+  },
 }));
