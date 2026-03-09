@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { StatusCodes } from "../../constants/statusCodes.js";
 import { prisma } from "../../lib/prisma.js";
+import { getIO } from "../../lib/websocket.js";
 
 export const followUser = async (req: Request, res: Response) => {
    const followerId = req.userId;
@@ -45,6 +46,30 @@ export const followUser = async (req: Request, res: Response) => {
         },
     },
    });
+
+   const io = getIO();
+
+if (followerId !== followingId) {
+
+  const notification = await prisma.notification.create({
+    data: {
+      type: "FOLLOW",
+      userId: followingId,
+      actorId: followerId
+    },
+    include: {
+      actor: {
+        select: {
+          id: true,
+          username: true,
+          image: true
+        }
+      }
+    }
+  });
+
+  io.to(`user:${followingId}`).emit("notification", notification);
+}
 
    return res.json({ 
     messsage: "Followed",

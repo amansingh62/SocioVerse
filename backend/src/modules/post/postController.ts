@@ -3,6 +3,7 @@ import { StatusCodes } from "../../constants/statusCodes.js";
 import { prisma } from "../../lib/prisma.js";
 import cloudinary from "../../lib/cloudinary.js";
 import { env } from "../../config/env.js";
+import { getIO } from "../../lib/websocket.js";
 
 export const createPost = async (req: Request, res: Response) => {
   const userId = req.userId;
@@ -31,6 +32,9 @@ export const createPost = async (req: Request, res: Response) => {
     },
   },
 });
+
+  const io = getIO();
+  io.emit("post:created", post);
 
   return res.status(StatusCodes.CREATED).json(post);
 };
@@ -72,6 +76,15 @@ export const toggleLike = async (req: Request, res: Response) => {
       .status(StatusCodes.UNAUTHORIZED)
       .json({ message: "Unauthorized" });
 
+  const post = await prisma.post.findUnique({
+    where: { id },
+    select: { authorId: true },
+  });
+
+  if (!post) {
+    return res.status(StatusCodes.NOT_FOUND).json({ message: "Post not found" });
+  }
+
   const existing = await prisma.like.findUnique({
     where: {
       userId_postId: {
@@ -104,6 +117,34 @@ export const toggleLike = async (req: Request, res: Response) => {
 
     isLiked = true;
   }
+
+  const io = getIO();
+  
+if (isLiked && post.authorId !== userId) {
+
+  const notification = await prisma.notification.create({
+    data: {
+      type: "LIKE",
+      userId: post.authorId,
+      actorId: userId,
+      postId: id,
+    },
+    include: {
+      actor: {
+        select: {
+          id: true,
+          username: true,
+          image: true
+        }
+      }
+    }
+  });
+
+  io.to(`user:${post.authorId}`).emit("notification", notification);
+    io.emit("post:liked", {
+  postId: id,
+});
+}
 
   return res.json({ isLiked });
 };
@@ -166,7 +207,7 @@ export const addComment = async (req: Request, res: Response) => {
 
   const post = await prisma.post.findUnique({
     where: { id: postId },
-    select: { id: true },
+    select: { id: true , authorId: true },
   });
 
   if (!post) {
@@ -192,6 +233,40 @@ export const addComment = async (req: Request, res: Response) => {
       },
     },
   });
+
+  const io = getIO();
+
+if (post.authorId !== userId) {
+
+  const notification = await prisma.notification.create({
+    data: {
+      type: "COMMENT",
+      userId: post.authorId,
+      actorId: userId,
+      postId,
+      commentId: comment.id
+    },
+    include: {
+      actor: {
+        select: {
+          id: true,
+          username: true,
+          image: true
+        }
+      }
+    }
+  });
+
+  io.to(`user:${post.authorId}`).emit("notification", {
+    ...notification,
+    commentContent: comment.content
+  });
+
+  io.emit("comment:created", {
+    postId,
+    comment
+  });
+}
 
   return res.status(StatusCodes.CREATED).json(comment);
 };
@@ -503,4 +578,31 @@ export const getPostComments = async (req: Request, res: Response) => {
   });
 
   return res.json({ comments });
+};
+
+export const getNotifications = async (req: Request, res: Response) => {
+  const userId = req.userId;
+
+  if(!userId) return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unathorized" });
+
+ const notifications = await prisma.notification.findMany({
+  where: { userId },
+  orderBy: { createdAt: "desc" },
+  include: {
+    actor: {
+      select: {
+        id: true,
+        username: true,
+        image: true
+      }
+    },
+    comment: {
+      select: {
+        content: true
+      }
+    }
+  }
+});
+
+  res.json({ notifications });
 };

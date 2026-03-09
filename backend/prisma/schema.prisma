@@ -32,6 +32,8 @@ model User {
   savedPosts SavedPosts[]
   followers Follow[] @relation("followers")
   following Follow[] @relation("following")
+  user Notification[] @relation("UserNotifications")
+  actor Notification[] @relation("ActorNotifications") 
 
   @@index([email])
 }
@@ -106,6 +108,8 @@ model Comment {
   parent    Comment? @relation("Reply", fields: [parentId], references: [id])
   replies   Comment[] @relation("Reply")
 
+  notifications Notification[] 
+
   createdAt DateTime @default(now())
 
   @@index([postId])
@@ -124,4 +128,23 @@ model SavedPosts {
   @@unique([userId, postId])
 }
 
+model Notification {
+  id        String   @id @default(uuid())
+  type      NotificationType
+  userId    String
+  actorId   String
+  postId    String?
+  commentId String?
+  createdAt DateTime @default(now())
 
+  user  User @relation("UserNotifications", fields: [userId], references: [id])
+  actor User @relation("ActorNotifications", fields: [actorId], references: [id])
+  comment Comment? @relation(fields: [commentId], references: [id])
+
+}
+
+enum NotificationType {
+  LIKE
+  COMMENT
+  FOLLOW
+}
