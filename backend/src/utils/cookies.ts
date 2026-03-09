@@ -2,9 +2,9 @@ import type { Response } from "express";
 
 const cookieOptions = {
   httpOnly: true,
-  secure: false,
+  secure: true,
   path: "/",
-  sameSite: "lax" as const
+  sameSite: "none" as const
 };
 
 export const setAuthCookies = (
