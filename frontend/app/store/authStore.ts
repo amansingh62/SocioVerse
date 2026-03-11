@@ -7,7 +7,7 @@ interface AuthState {
   isLoading: boolean;
 
   setUser: (user: User | null) => void;
-  setLoading: (loading: boolean) => void;
+  setLoading: (isLoading: boolean) => void;
 
   fetchMe: () => Promise<void>;
 }
@@ -17,24 +17,19 @@ export const useAuthStore = create<AuthState>((set) => ({
   isLoading: true,
 
   setUser: (user) => set({ user }),
-  setLoading: (loading) => set({ isLoading: loading }),
+  setLoading: (isLoading) => set({ isLoading }),
 
   fetchMe: async () => {
     try {
+      set({ isLoading: true });
+
       const { data } = await api.get("/auth/me");
 
-      set({
-        user: data,
-        isLoading: false,
-      });
-
-    } catch (err) {
-      console.error(err);
-
-      set({
-        user: null,
-        isLoading: false,
-      });
+      set({ user: data });
+    } catch {
+      set({ user: null });
+    } finally {
+      set({ isLoading: false });
     }
   },
 }));

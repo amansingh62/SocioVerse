@@ -8,6 +8,12 @@ import { useAuthStore } from "@/app/store/authStore";
 import { initSocket } from "../lib/socket";
 import { usePostStore } from "../store/postStore";
 
+import SupportChat from "@/app/components/SupportChat";
+import TrendingHashtags from "@/app/components/TrendingHashtags";
+import Advertisement from "@/app/components/Advertisment";
+import FeaturedProfiles from "@/app/components/FeaturedProfiles";
+import SearchBar from "../components/SearchBar";
+
 const NAV_ITEMS = [
   {
     href: "/dashboard",
@@ -34,41 +40,69 @@ const NAV_ITEMS = [
     label: "Notifications",
     icon: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-[18px] h-[18px]">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/messages",
+    label: "Messages",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-[18px] h-[18px]">
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/live",
+    label: "Live Chat",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-[18px] h-[18px]">
+        <circle cx="12" cy="12" r="10" />
+        <circle cx="12" cy="12" r="3" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/game",
+    label: "Games",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-[18px] h-[18px]">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+      </svg>
+    ),
+  },
+  {
+    href: "/dashboard/advertise",
+    label: "Advertise",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-[18px] h-[18px]">
+        <path d="M3 11l19-9-9 19-2-8-8-2z" />
       </svg>
     ),
   },
 ];
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+const LEFT_W  = "w-90";   
+const RIGHT_W = "w-90";   
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router   = useRouter();
   const pathname = usePathname();
   const { fetchMe, isLoading, user } = useAuthStore();
 
   useEffect(() => { fetchMe(); }, [fetchMe]);
 
-const initSocketListeners = usePostStore(
-  (s) => s.initSocketListeners
-);
+  const initSocketListeners = usePostStore((s) => s.initSocketListeners);
 
-useEffect(() => {
-  if (!user) return;
-
-  const socket = initSocket();
-  console.log("Connecting socket for user:", user.id);
-
-  if (!socket) return;
-
-  initSocketListeners();
-
-  return () => {
-    socket.disconnect();
-  };
-}, [user]);
+  useEffect(() => {
+    if (!user) return;
+    const socket = initSocket();
+    if (!socket) return;
+    initSocketListeners();
+    return () => { socket.disconnect(); };
+  }, [user]);
 
   const handleLogout = async () => {
     await api.post("/auth/logout");
@@ -77,11 +111,11 @@ useEffect(() => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="flex gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-[#c9967a] dot-pulse" />
-          <span className="w-2 h-2 rounded-full bg-[#c9967a] dot-pulse-2" />
-          <span className="w-2 h-2 rounded-full bg-[#c9967a] dot-pulse-3" />
+      <div className="flex items-center justify-center min-h-screen purple-mesh-bg">
+        <div className="flex gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-violet-500 dot-pulse"   />
+          <span className="w-2.5 h-2.5 rounded-full bg-violet-500 dot-pulse-2" />
+          <span className="w-2.5 h-2.5 rounded-full bg-violet-500 dot-pulse-3" />
         </div>
       </div>
     );
@@ -90,70 +124,85 @@ useEffect(() => {
   if (!user) { router.replace("/login"); return null; }
 
   return (
-    /* Full-viewport fixed container — nothing overflows */
-    <div className="flex h-screen overflow-hidden relative">
+    <div className="purple-mesh-bg w-full h-screen overflow-hidden flex flex-col">
 
-      {/* Ambient blobs */}
-      <div className="bg-blob-1" />
-      <div className="bg-blob-2" />
+      <div className="shrink-0 z-20">
+        <SearchBar />
+      </div>
 
-      {/* ── Sidebar — fixed height, never scrolls ── */}
-      <aside className="
-        w-64 h-screen flex-shrink-0 z-10
-        glass-card flex flex-col px-5 py-8
-        border-r border-[rgba(201,150,122,0.15)]
-      ">
-        {/* Logo */}
-        <div className="flex items-center gap-2.5 mb-8">
-          <span className="text-[#c9967a] text-xl">✦</span>
-          <span className="font-display text-[23px] font-semibold tracking-widest text-[#1c1917]">
-            Socioverse
-          </span>
-        </div>
+      <div className="flex flex-1 overflow-hidden relative">
 
-        {/* Nav links */}
-        <nav className="flex flex-col gap-1 mt-4 flex-1">
-          {NAV_ITEMS.map(({ href, label, icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className={`nav-link ${pathname === href ? "active" : ""}`}
+        <aside
+          className={`
+            fixed left-0 top-0 bottom-0 ${LEFT_W} z-10
+            flex flex-col gap-4 px-4 py-8
+            overflow-y-auto no-scrollbar
+            /* push down by SearchBar height — adjust if SearchBar height differs */
+            pt-[calc(2rem+56px)]
+          `}
+        >
+          <div className="glass flex flex-col px-5 py-6 rounded-2xl flex-1">
+            <nav className="flex flex-col gap-0.5 flex-1">
+              {NAV_ITEMS.map(({ href, label, icon }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`nav-link ${pathname === href ? "active" : ""}`}
+                >
+                  <span className="text-violet-400 flex items-center">{icon}</span>
+                  {label}
+                </Link>
+              ))}
+            </nav>
+
+            <p className="text-[11px] text-violet-900 mt-5 pl-1">v0.2.1</p>
+          </div>
+
+          <div className="glass px-5 py-5 rounded-2xl flex flex-col">
+            <SupportChat />
+
+            <button
+              onClick={handleLogout}
+              className="
+                flex items-center gap-2 mt-4 px-3.5 py-2.5 rounded-xl
+                border border-violet-900/40 text-violet-400 text-sm font-medium
+                bg-transparent cursor-pointer transition-all duration-200
+                hover:bg-violet-950/40 hover:border-violet-700/50 hover:text-violet-300
+              "
             >
-              <span className="text-[#c9967a] flex items-center">{icon}</span>
-              {label}
-            </Link>
-          ))}
-        </nav>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-4 h-4">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+              </svg>
+              Sign out
+            </button>
+          </div>
+        </aside>
 
-        {/* Logout */}
-        <button
-          onClick={handleLogout}
+        <main
           className="
-            flex items-center gap-2 mt-4 px-3.5 py-2.5 rounded-xl
-            border border-[rgba(201,150,122,0.22)] text-[#a06050] text-sm font-medium
-            bg-transparent cursor-pointer transition-all duration-200
-            hover:bg-[rgba(201,150,122,0.08)] hover:border-[rgba(201,97,74,0.30)]
+            flex-1 h-full overflow-y-auto no-scrollbar
+            ml-72 mr-80          /* matches LEFT_W and RIGHT_W */
           "
         >
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-4 h-4">
-            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
-          </svg>
-          Sign out
-        </button>
-      </aside>
+          <div className="px-8 py-8">
+            {children}
+          </div>
+        </main>
 
-      {/* ── Main — scrolls independently, scrollbar hidden ── */}
-      <main
-        className="flex-1 h-screen overflow-y-scroll relative z-[1]"
-        style={{ scrollbarWidth: "none" }}
-      >
-        {/* Hide scrollbar on webkit */}
-        <style>{`main::-webkit-scrollbar { display: none; }`}</style>
+        <aside
+          className={`
+            fixed right-0 top-0 bottom-0 ${RIGHT_W} z-10
+            flex flex-col gap-4 px-4 py-8
+            overflow-y-auto no-scrollbar
+            pt-[calc(2rem+56px)]
+          `}
+        >
+          <TrendingHashtags />
+          <Advertisement />
+          <FeaturedProfiles />
+        </aside>
 
-        <div className="px-12 py-10">
-          {children}
-        </div>
-      </main>
+      </div>
     </div>
   );
 }
