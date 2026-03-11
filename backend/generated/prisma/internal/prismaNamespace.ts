@@ -391,7 +391,9 @@ export const ModelName = {
   Like: 'Like',
   Comment: 'Comment',
   SavedPosts: 'SavedPosts',
-  Notification: 'Notification'
+  Notification: 'Notification',
+  HashTag: 'HashTag',
+  PostHashTag: 'PostHashTag'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -407,7 +409,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "refreshToken" | "follow" | "post" | "like" | "comment" | "savedPosts" | "notification"
+    modelProps: "user" | "refreshToken" | "follow" | "post" | "like" | "comment" | "savedPosts" | "notification" | "hashTag" | "postHashTag"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1003,6 +1005,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    HashTag: {
+      payload: Prisma.$HashTagPayload<ExtArgs>
+      fields: Prisma.HashTagFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.HashTagFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HashTagPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.HashTagFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HashTagPayload>
+        }
+        findFirst: {
+          args: Prisma.HashTagFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HashTagPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.HashTagFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HashTagPayload>
+        }
+        findMany: {
+          args: Prisma.HashTagFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HashTagPayload>[]
+        }
+        create: {
+          args: Prisma.HashTagCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HashTagPayload>
+        }
+        createMany: {
+          args: Prisma.HashTagCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.HashTagCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HashTagPayload>[]
+        }
+        delete: {
+          args: Prisma.HashTagDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HashTagPayload>
+        }
+        update: {
+          args: Prisma.HashTagUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HashTagPayload>
+        }
+        deleteMany: {
+          args: Prisma.HashTagDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.HashTagUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.HashTagUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HashTagPayload>[]
+        }
+        upsert: {
+          args: Prisma.HashTagUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$HashTagPayload>
+        }
+        aggregate: {
+          args: Prisma.HashTagAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateHashTag>
+        }
+        groupBy: {
+          args: Prisma.HashTagGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HashTagGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.HashTagCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.HashTagCountAggregateOutputType> | number
+        }
+      }
+    }
+    PostHashTag: {
+      payload: Prisma.$PostHashTagPayload<ExtArgs>
+      fields: Prisma.PostHashTagFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PostHashTagFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostHashTagPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PostHashTagFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostHashTagPayload>
+        }
+        findFirst: {
+          args: Prisma.PostHashTagFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostHashTagPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PostHashTagFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostHashTagPayload>
+        }
+        findMany: {
+          args: Prisma.PostHashTagFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostHashTagPayload>[]
+        }
+        create: {
+          args: Prisma.PostHashTagCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostHashTagPayload>
+        }
+        createMany: {
+          args: Prisma.PostHashTagCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PostHashTagCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostHashTagPayload>[]
+        }
+        delete: {
+          args: Prisma.PostHashTagDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostHashTagPayload>
+        }
+        update: {
+          args: Prisma.PostHashTagUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostHashTagPayload>
+        }
+        deleteMany: {
+          args: Prisma.PostHashTagDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PostHashTagUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PostHashTagUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostHashTagPayload>[]
+        }
+        upsert: {
+          args: Prisma.PostHashTagUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PostHashTagPayload>
+        }
+        aggregate: {
+          args: Prisma.PostHashTagAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePostHashTag>
+        }
+        groupBy: {
+          args: Prisma.PostHashTagGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PostHashTagGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PostHashTagCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PostHashTagCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1135,6 +1285,23 @@ export const NotificationScalarFieldEnum = {
 export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
 
 
+export const HashTagScalarFieldEnum = {
+  id: 'id',
+  tag: 'tag',
+  count: 'count'
+} as const
+
+export type HashTagScalarFieldEnum = (typeof HashTagScalarFieldEnum)[keyof typeof HashTagScalarFieldEnum]
+
+
+export const PostHashTagScalarFieldEnum = {
+  postId: 'postId',
+  hashtagId: 'hashtagId'
+} as const
+
+export type PostHashTagScalarFieldEnum = (typeof PostHashTagScalarFieldEnum)[keyof typeof PostHashTagScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -1232,6 +1399,20 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
  * Reference to a field of type 'Int[]'
  */
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Float'
+ */
+export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+/**
+ * Reference to a field of type 'Float[]'
+ */
+export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
 
 /**
@@ -1337,6 +1518,8 @@ export type GlobalOmitConfig = {
   comment?: Prisma.CommentOmit
   savedPosts?: Prisma.SavedPostsOmit
   notification?: Prisma.NotificationOmit
+  hashTag?: Prisma.HashTagOmit
+  postHashTag?: Prisma.PostHashTagOmit
 }
 
 /* Types for Logging */

@@ -77,6 +77,7 @@ model Post {
   likes Like[]
   comments Comment[]
   savedBy SavedPosts[] 
+  hashtags PostHashTag[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -147,4 +148,22 @@ enum NotificationType {
   LIKE
   COMMENT
   FOLLOW
+}
+
+model HashTag {
+  id String @id @default(uuid())
+  tag  String @unique
+  count Int @default(0)
+
+  posts PostHashTag[]
+}
+
+model PostHashTag {
+  postId String 
+  hashtagId String
+
+  post Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
+  hashTag HashTag @relation(fields: [hashtagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, hashtagId])
 }

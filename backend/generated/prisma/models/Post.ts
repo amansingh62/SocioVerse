@@ -202,6 +202,7 @@ export type PostWhereInput = {
   likes?: Prisma.LikeListRelationFilter
   comments?: Prisma.CommentListRelationFilter
   savedBy?: Prisma.SavedPostsListRelationFilter
+  hashtags?: Prisma.PostHashTagListRelationFilter
 }
 
 export type PostOrderByWithRelationInput = {
@@ -216,6 +217,7 @@ export type PostOrderByWithRelationInput = {
   likes?: Prisma.LikeOrderByRelationAggregateInput
   comments?: Prisma.CommentOrderByRelationAggregateInput
   savedBy?: Prisma.SavedPostsOrderByRelationAggregateInput
+  hashtags?: Prisma.PostHashTagOrderByRelationAggregateInput
 }
 
 export type PostWhereUniqueInput = Prisma.AtLeast<{
@@ -233,6 +235,7 @@ export type PostWhereUniqueInput = Prisma.AtLeast<{
   likes?: Prisma.LikeListRelationFilter
   comments?: Prisma.CommentListRelationFilter
   savedBy?: Prisma.SavedPostsListRelationFilter
+  hashtags?: Prisma.PostHashTagListRelationFilter
 }, "id">
 
 export type PostOrderByWithAggregationInput = {
@@ -272,6 +275,7 @@ export type PostCreateInput = {
   likes?: Prisma.LikeCreateNestedManyWithoutPostInput
   comments?: Prisma.CommentCreateNestedManyWithoutPostInput
   savedBy?: Prisma.SavedPostsCreateNestedManyWithoutPostInput
+  hashtags?: Prisma.PostHashTagCreateNestedManyWithoutPostInput
 }
 
 export type PostUncheckedCreateInput = {
@@ -285,6 +289,7 @@ export type PostUncheckedCreateInput = {
   likes?: Prisma.LikeUncheckedCreateNestedManyWithoutPostInput
   comments?: Prisma.CommentUncheckedCreateNestedManyWithoutPostInput
   savedBy?: Prisma.SavedPostsUncheckedCreateNestedManyWithoutPostInput
+  hashtags?: Prisma.PostHashTagUncheckedCreateNestedManyWithoutPostInput
 }
 
 export type PostUpdateInput = {
@@ -298,6 +303,7 @@ export type PostUpdateInput = {
   likes?: Prisma.LikeUpdateManyWithoutPostNestedInput
   comments?: Prisma.CommentUpdateManyWithoutPostNestedInput
   savedBy?: Prisma.SavedPostsUpdateManyWithoutPostNestedInput
+  hashtags?: Prisma.PostHashTagUpdateManyWithoutPostNestedInput
 }
 
 export type PostUncheckedUpdateInput = {
@@ -311,6 +317,7 @@ export type PostUncheckedUpdateInput = {
   likes?: Prisma.LikeUncheckedUpdateManyWithoutPostNestedInput
   comments?: Prisma.CommentUncheckedUpdateManyWithoutPostNestedInput
   savedBy?: Prisma.SavedPostsUncheckedUpdateManyWithoutPostNestedInput
+  hashtags?: Prisma.PostHashTagUncheckedUpdateManyWithoutPostNestedInput
 }
 
 export type PostCreateManyInput = {
@@ -475,6 +482,20 @@ export type PostUpdateOneRequiredWithoutSavedByNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.PostUpdateToOneWithWhereWithoutSavedByInput, Prisma.PostUpdateWithoutSavedByInput>, Prisma.PostUncheckedUpdateWithoutSavedByInput>
 }
 
+export type PostCreateNestedOneWithoutHashtagsInput = {
+  create?: Prisma.XOR<Prisma.PostCreateWithoutHashtagsInput, Prisma.PostUncheckedCreateWithoutHashtagsInput>
+  connectOrCreate?: Prisma.PostCreateOrConnectWithoutHashtagsInput
+  connect?: Prisma.PostWhereUniqueInput
+}
+
+export type PostUpdateOneRequiredWithoutHashtagsNestedInput = {
+  create?: Prisma.XOR<Prisma.PostCreateWithoutHashtagsInput, Prisma.PostUncheckedCreateWithoutHashtagsInput>
+  connectOrCreate?: Prisma.PostCreateOrConnectWithoutHashtagsInput
+  upsert?: Prisma.PostUpsertWithoutHashtagsInput
+  connect?: Prisma.PostWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PostUpdateToOneWithWhereWithoutHashtagsInput, Prisma.PostUpdateWithoutHashtagsInput>, Prisma.PostUncheckedUpdateWithoutHashtagsInput>
+}
+
 export type PostCreateWithoutAuthorInput = {
   id?: string
   content: string
@@ -485,6 +506,7 @@ export type PostCreateWithoutAuthorInput = {
   likes?: Prisma.LikeCreateNestedManyWithoutPostInput
   comments?: Prisma.CommentCreateNestedManyWithoutPostInput
   savedBy?: Prisma.SavedPostsCreateNestedManyWithoutPostInput
+  hashtags?: Prisma.PostHashTagCreateNestedManyWithoutPostInput
 }
 
 export type PostUncheckedCreateWithoutAuthorInput = {
@@ -497,6 +519,7 @@ export type PostUncheckedCreateWithoutAuthorInput = {
   likes?: Prisma.LikeUncheckedCreateNestedManyWithoutPostInput
   comments?: Prisma.CommentUncheckedCreateNestedManyWithoutPostInput
   savedBy?: Prisma.SavedPostsUncheckedCreateNestedManyWithoutPostInput
+  hashtags?: Prisma.PostHashTagUncheckedCreateNestedManyWithoutPostInput
 }
 
 export type PostCreateOrConnectWithoutAuthorInput = {
@@ -548,6 +571,7 @@ export type PostCreateWithoutLikesInput = {
   author: Prisma.UserCreateNestedOneWithoutPostsInput
   comments?: Prisma.CommentCreateNestedManyWithoutPostInput
   savedBy?: Prisma.SavedPostsCreateNestedManyWithoutPostInput
+  hashtags?: Prisma.PostHashTagCreateNestedManyWithoutPostInput
 }
 
 export type PostUncheckedCreateWithoutLikesInput = {
@@ -560,6 +584,7 @@ export type PostUncheckedCreateWithoutLikesInput = {
   updatedAt?: Date | string
   comments?: Prisma.CommentUncheckedCreateNestedManyWithoutPostInput
   savedBy?: Prisma.SavedPostsUncheckedCreateNestedManyWithoutPostInput
+  hashtags?: Prisma.PostHashTagUncheckedCreateNestedManyWithoutPostInput
 }
 
 export type PostCreateOrConnectWithoutLikesInput = {
@@ -588,6 +613,7 @@ export type PostUpdateWithoutLikesInput = {
   author?: Prisma.UserUpdateOneRequiredWithoutPostsNestedInput
   comments?: Prisma.CommentUpdateManyWithoutPostNestedInput
   savedBy?: Prisma.SavedPostsUpdateManyWithoutPostNestedInput
+  hashtags?: Prisma.PostHashTagUpdateManyWithoutPostNestedInput
 }
 
 export type PostUncheckedUpdateWithoutLikesInput = {
@@ -600,6 +626,7 @@ export type PostUncheckedUpdateWithoutLikesInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   comments?: Prisma.CommentUncheckedUpdateManyWithoutPostNestedInput
   savedBy?: Prisma.SavedPostsUncheckedUpdateManyWithoutPostNestedInput
+  hashtags?: Prisma.PostHashTagUncheckedUpdateManyWithoutPostNestedInput
 }
 
 export type PostCreateWithoutCommentsInput = {
@@ -612,6 +639,7 @@ export type PostCreateWithoutCommentsInput = {
   author: Prisma.UserCreateNestedOneWithoutPostsInput
   likes?: Prisma.LikeCreateNestedManyWithoutPostInput
   savedBy?: Prisma.SavedPostsCreateNestedManyWithoutPostInput
+  hashtags?: Prisma.PostHashTagCreateNestedManyWithoutPostInput
 }
 
 export type PostUncheckedCreateWithoutCommentsInput = {
@@ -624,6 +652,7 @@ export type PostUncheckedCreateWithoutCommentsInput = {
   updatedAt?: Date | string
   likes?: Prisma.LikeUncheckedCreateNestedManyWithoutPostInput
   savedBy?: Prisma.SavedPostsUncheckedCreateNestedManyWithoutPostInput
+  hashtags?: Prisma.PostHashTagUncheckedCreateNestedManyWithoutPostInput
 }
 
 export type PostCreateOrConnectWithoutCommentsInput = {
@@ -652,6 +681,7 @@ export type PostUpdateWithoutCommentsInput = {
   author?: Prisma.UserUpdateOneRequiredWithoutPostsNestedInput
   likes?: Prisma.LikeUpdateManyWithoutPostNestedInput
   savedBy?: Prisma.SavedPostsUpdateManyWithoutPostNestedInput
+  hashtags?: Prisma.PostHashTagUpdateManyWithoutPostNestedInput
 }
 
 export type PostUncheckedUpdateWithoutCommentsInput = {
@@ -664,6 +694,7 @@ export type PostUncheckedUpdateWithoutCommentsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   likes?: Prisma.LikeUncheckedUpdateManyWithoutPostNestedInput
   savedBy?: Prisma.SavedPostsUncheckedUpdateManyWithoutPostNestedInput
+  hashtags?: Prisma.PostHashTagUncheckedUpdateManyWithoutPostNestedInput
 }
 
 export type PostCreateWithoutSavedByInput = {
@@ -676,6 +707,7 @@ export type PostCreateWithoutSavedByInput = {
   author: Prisma.UserCreateNestedOneWithoutPostsInput
   likes?: Prisma.LikeCreateNestedManyWithoutPostInput
   comments?: Prisma.CommentCreateNestedManyWithoutPostInput
+  hashtags?: Prisma.PostHashTagCreateNestedManyWithoutPostInput
 }
 
 export type PostUncheckedCreateWithoutSavedByInput = {
@@ -688,6 +720,7 @@ export type PostUncheckedCreateWithoutSavedByInput = {
   updatedAt?: Date | string
   likes?: Prisma.LikeUncheckedCreateNestedManyWithoutPostInput
   comments?: Prisma.CommentUncheckedCreateNestedManyWithoutPostInput
+  hashtags?: Prisma.PostHashTagUncheckedCreateNestedManyWithoutPostInput
 }
 
 export type PostCreateOrConnectWithoutSavedByInput = {
@@ -716,6 +749,7 @@ export type PostUpdateWithoutSavedByInput = {
   author?: Prisma.UserUpdateOneRequiredWithoutPostsNestedInput
   likes?: Prisma.LikeUpdateManyWithoutPostNestedInput
   comments?: Prisma.CommentUpdateManyWithoutPostNestedInput
+  hashtags?: Prisma.PostHashTagUpdateManyWithoutPostNestedInput
 }
 
 export type PostUncheckedUpdateWithoutSavedByInput = {
@@ -728,6 +762,75 @@ export type PostUncheckedUpdateWithoutSavedByInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   likes?: Prisma.LikeUncheckedUpdateManyWithoutPostNestedInput
   comments?: Prisma.CommentUncheckedUpdateManyWithoutPostNestedInput
+  hashtags?: Prisma.PostHashTagUncheckedUpdateManyWithoutPostNestedInput
+}
+
+export type PostCreateWithoutHashtagsInput = {
+  id?: string
+  content: string
+  mediaUrl?: string | null
+  mediaType?: $Enums.MediaType | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  author: Prisma.UserCreateNestedOneWithoutPostsInput
+  likes?: Prisma.LikeCreateNestedManyWithoutPostInput
+  comments?: Prisma.CommentCreateNestedManyWithoutPostInput
+  savedBy?: Prisma.SavedPostsCreateNestedManyWithoutPostInput
+}
+
+export type PostUncheckedCreateWithoutHashtagsInput = {
+  id?: string
+  content: string
+  mediaUrl?: string | null
+  mediaType?: $Enums.MediaType | null
+  authorId: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  likes?: Prisma.LikeUncheckedCreateNestedManyWithoutPostInput
+  comments?: Prisma.CommentUncheckedCreateNestedManyWithoutPostInput
+  savedBy?: Prisma.SavedPostsUncheckedCreateNestedManyWithoutPostInput
+}
+
+export type PostCreateOrConnectWithoutHashtagsInput = {
+  where: Prisma.PostWhereUniqueInput
+  create: Prisma.XOR<Prisma.PostCreateWithoutHashtagsInput, Prisma.PostUncheckedCreateWithoutHashtagsInput>
+}
+
+export type PostUpsertWithoutHashtagsInput = {
+  update: Prisma.XOR<Prisma.PostUpdateWithoutHashtagsInput, Prisma.PostUncheckedUpdateWithoutHashtagsInput>
+  create: Prisma.XOR<Prisma.PostCreateWithoutHashtagsInput, Prisma.PostUncheckedCreateWithoutHashtagsInput>
+  where?: Prisma.PostWhereInput
+}
+
+export type PostUpdateToOneWithWhereWithoutHashtagsInput = {
+  where?: Prisma.PostWhereInput
+  data: Prisma.XOR<Prisma.PostUpdateWithoutHashtagsInput, Prisma.PostUncheckedUpdateWithoutHashtagsInput>
+}
+
+export type PostUpdateWithoutHashtagsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  content?: Prisma.StringFieldUpdateOperationsInput | string
+  mediaUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mediaType?: Prisma.NullableEnumMediaTypeFieldUpdateOperationsInput | $Enums.MediaType | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  author?: Prisma.UserUpdateOneRequiredWithoutPostsNestedInput
+  likes?: Prisma.LikeUpdateManyWithoutPostNestedInput
+  comments?: Prisma.CommentUpdateManyWithoutPostNestedInput
+  savedBy?: Prisma.SavedPostsUpdateManyWithoutPostNestedInput
+}
+
+export type PostUncheckedUpdateWithoutHashtagsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  content?: Prisma.StringFieldUpdateOperationsInput | string
+  mediaUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  mediaType?: Prisma.NullableEnumMediaTypeFieldUpdateOperationsInput | $Enums.MediaType | null
+  authorId?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  likes?: Prisma.LikeUncheckedUpdateManyWithoutPostNestedInput
+  comments?: Prisma.CommentUncheckedUpdateManyWithoutPostNestedInput
+  savedBy?: Prisma.SavedPostsUncheckedUpdateManyWithoutPostNestedInput
 }
 
 export type PostCreateManyAuthorInput = {
@@ -749,6 +852,7 @@ export type PostUpdateWithoutAuthorInput = {
   likes?: Prisma.LikeUpdateManyWithoutPostNestedInput
   comments?: Prisma.CommentUpdateManyWithoutPostNestedInput
   savedBy?: Prisma.SavedPostsUpdateManyWithoutPostNestedInput
+  hashtags?: Prisma.PostHashTagUpdateManyWithoutPostNestedInput
 }
 
 export type PostUncheckedUpdateWithoutAuthorInput = {
@@ -761,6 +865,7 @@ export type PostUncheckedUpdateWithoutAuthorInput = {
   likes?: Prisma.LikeUncheckedUpdateManyWithoutPostNestedInput
   comments?: Prisma.CommentUncheckedUpdateManyWithoutPostNestedInput
   savedBy?: Prisma.SavedPostsUncheckedUpdateManyWithoutPostNestedInput
+  hashtags?: Prisma.PostHashTagUncheckedUpdateManyWithoutPostNestedInput
 }
 
 export type PostUncheckedUpdateManyWithoutAuthorInput = {
@@ -781,12 +886,14 @@ export type PostCountOutputType = {
   likes: number
   comments: number
   savedBy: number
+  hashtags: number
 }
 
 export type PostCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   likes?: boolean | PostCountOutputTypeCountLikesArgs
   comments?: boolean | PostCountOutputTypeCountCommentsArgs
   savedBy?: boolean | PostCountOutputTypeCountSavedByArgs
+  hashtags?: boolean | PostCountOutputTypeCountHashtagsArgs
 }
 
 /**
@@ -820,6 +927,13 @@ export type PostCountOutputTypeCountSavedByArgs<ExtArgs extends runtime.Types.Ex
   where?: Prisma.SavedPostsWhereInput
 }
 
+/**
+ * PostCountOutputType without action
+ */
+export type PostCountOutputTypeCountHashtagsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PostHashTagWhereInput
+}
+
 
 export type PostSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -833,6 +947,7 @@ export type PostSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   likes?: boolean | Prisma.Post$likesArgs<ExtArgs>
   comments?: boolean | Prisma.Post$commentsArgs<ExtArgs>
   savedBy?: boolean | Prisma.Post$savedByArgs<ExtArgs>
+  hashtags?: boolean | Prisma.Post$hashtagsArgs<ExtArgs>
   _count?: boolean | Prisma.PostCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["post"]>
 
@@ -874,6 +989,7 @@ export type PostInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   likes?: boolean | Prisma.Post$likesArgs<ExtArgs>
   comments?: boolean | Prisma.Post$commentsArgs<ExtArgs>
   savedBy?: boolean | Prisma.Post$savedByArgs<ExtArgs>
+  hashtags?: boolean | Prisma.Post$hashtagsArgs<ExtArgs>
   _count?: boolean | Prisma.PostCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type PostIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -890,6 +1006,7 @@ export type $PostPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     likes: Prisma.$LikePayload<ExtArgs>[]
     comments: Prisma.$CommentPayload<ExtArgs>[]
     savedBy: Prisma.$SavedPostsPayload<ExtArgs>[]
+    hashtags: Prisma.$PostHashTagPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1297,6 +1414,7 @@ export interface Prisma__PostClient<T, Null = never, ExtArgs extends runtime.Typ
   likes<T extends Prisma.Post$likesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Post$likesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LikePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   comments<T extends Prisma.Post$commentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Post$commentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CommentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   savedBy<T extends Prisma.Post$savedByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Post$savedByArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SavedPostsPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  hashtags<T extends Prisma.Post$hashtagsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Post$hashtagsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PostHashTagPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1798,6 +1916,30 @@ export type Post$savedByArgs<ExtArgs extends runtime.Types.Extensions.InternalAr
   take?: number
   skip?: number
   distinct?: Prisma.SavedPostsScalarFieldEnum | Prisma.SavedPostsScalarFieldEnum[]
+}
+
+/**
+ * Post.hashtags
+ */
+export type Post$hashtagsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PostHashTag
+   */
+  select?: Prisma.PostHashTagSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PostHashTag
+   */
+  omit?: Prisma.PostHashTagOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PostHashTagInclude<ExtArgs> | null
+  where?: Prisma.PostHashTagWhereInput
+  orderBy?: Prisma.PostHashTagOrderByWithRelationInput | Prisma.PostHashTagOrderByWithRelationInput[]
+  cursor?: Prisma.PostHashTagWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PostHashTagScalarFieldEnum | Prisma.PostHashTagScalarFieldEnum[]
 }
 
 /**

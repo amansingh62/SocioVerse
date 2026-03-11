@@ -58,7 +58,9 @@ export const ModelName = {
   Like: 'Like',
   Comment: 'Comment',
   SavedPosts: 'SavedPosts',
-  Notification: 'Notification'
+  Notification: 'Notification',
+  HashTag: 'HashTag',
+  PostHashTag: 'PostHashTag'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -168,6 +170,23 @@ export const NotificationScalarFieldEnum = {
 } as const
 
 export type NotificationScalarFieldEnum = (typeof NotificationScalarFieldEnum)[keyof typeof NotificationScalarFieldEnum]
+
+
+export const HashTagScalarFieldEnum = {
+  id: 'id',
+  tag: 'tag',
+  count: 'count'
+} as const
+
+export type HashTagScalarFieldEnum = (typeof HashTagScalarFieldEnum)[keyof typeof HashTagScalarFieldEnum]
+
+
+export const PostHashTagScalarFieldEnum = {
+  postId: 'postId',
+  hashtagId: 'hashtagId'
+} as const
+
+export type PostHashTagScalarFieldEnum = (typeof PostHashTagScalarFieldEnum)[keyof typeof PostHashTagScalarFieldEnum]
 
 
 export const SortOrder = {

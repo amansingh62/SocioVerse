@@ -81,3 +81,13 @@ export type SavedPosts = Prisma.SavedPostsModel
  * 
  */
 export type Notification = Prisma.NotificationModel
+/**
+ * Model HashTag
+ * 
+ */
+export type HashTag = Prisma.HashTagModel
+/**
+ * Model PostHashTag
+ * 
+ */
+export type PostHashTag = Prisma.PostHashTagModel

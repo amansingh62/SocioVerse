@@ -5,9 +5,16 @@ import cloudinary from "../../lib/cloudinary.js";
 import { env } from "../../config/env.js";
 import { getIO } from "../../lib/websocket.js";
 
+function extractHashtags(content: string) {
+  const matches = content.match(/#[a-zA-Z0-9_]+/g) || [];
+  return matches.map(tag => tag.substring(1).toLowerCase());
+}
+
 export const createPost = async (req: Request, res: Response) => {
   const userId = req.userId;
   const { content, mediaUrl, mediaType } = req.body;
+
+  const hashtags = extractHashtags(content);
 
   const post = await prisma.post.create({
     data: {
@@ -16,7 +23,31 @@ export const createPost = async (req: Request, res: Response) => {
       mediaType,
       authorId: userId as string,
     },
-    include: {
+  });
+
+  for(const tag of hashtags) {
+    const hashtag = await prisma.hashTag.upsert({
+      where: { tag },
+      update: {
+        count: { increment: 1 },
+      }, 
+      create: {
+        tag,
+        count: 1
+      }
+    });
+
+    await prisma.postHashTag.create({
+      data: {
+        postId: post.id,
+        hashtagId: hashtag.id,
+      }
+    })
+  };
+
+  const fullPost = await prisma.post.findUnique({
+    where: { id: post.id },
+      include: {
       author: {
         select: {
           id: true,
@@ -31,12 +62,12 @@ export const createPost = async (req: Request, res: Response) => {
         },
       },
     },
-  });
+  })
 
   const io = getIO();
-  io.emit("post:created", post);
+  io.emit("post:created", fullPost);
 
-  return res.status(StatusCodes.CREATED).json(post);
+  return res.status(StatusCodes.CREATED).json(fullPost);
 };
 
 export const deletePost = async (req: Request, res: Response) => {
@@ -622,3 +653,43 @@ export const getNotifications = async (req: Request, res: Response) => {
 
   res.json({ notifications });
 };
+
+export const getTrendingHashtags = async (req: Request, res: Response) => {
+  const hashtags = await prisma.hashTag.findMany({
+    orderBy: {
+      count: "desc"
+    },
+    take: 5,
+  });
+
+  res.json(hashtags);
+};
+
+export const getPostsByHashtags = async (req: Request, res: Response) => {
+  const { tag } = req.params;
+  
+  if(typeof tag !== "string") return res.status(StatusCodes.NOT_FOUND).json({ message: "Hashtag not found"});
+
+  const posts = await prisma.post.findMany({
+    where: {
+      hashtags: {
+        some: {
+          hashTag: {
+            tag,
+          },
+        },
+      },
+    }, 
+    include: {
+      author: true,
+      _count: {
+        select: {
+          likes: true,
+          comments: true,
+        },
+      },
+    },
+  });
+
+  res.json(posts);
+}
