@@ -32,6 +32,7 @@ interface PostState {
 
   nextCursor: string | null;
   loading: boolean;
+  selectedTag: string | null;
 
   fetchFeed: () => Promise<void>;
   fetchExploreFeed: () => Promise<void>;
@@ -42,6 +43,7 @@ interface PostState {
   deleteComment: (commentId: string) => Promise<void>;
   fetchSavedPosts: () => Promise<void>;
 
+  setSelectedTag: (tag: string | null) => void;
   createPost: (payload: CreatePostPayload) => Promise<void>;
 
   toggleLike: (postId: string) => Promise<void>;
@@ -67,6 +69,9 @@ export const usePostStore = create<PostState>((set, get) => ({
 
   nextCursor: null,
   loading: false,
+  selectedTag: null,
+
+  setSelectedTag: (tag) => set({ selectedTag: tag }),
 
   fetchFeed: async () => {
     const { data } = await api.get("/post/feed");

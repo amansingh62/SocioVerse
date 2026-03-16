@@ -17,7 +17,9 @@ export interface Post {
   isLiked: boolean;
   comments?: PostComment[];
   hasMoreComments?: boolean;
-  optimistic?: boolean;       
+  optimistic?: boolean;    
+  
+  hashtags?: string[];
 
   _count: {
     likes: number;
