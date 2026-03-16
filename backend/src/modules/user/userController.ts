@@ -226,3 +226,50 @@ export const getUserPosts = async (req: Request, res: Response) => {
 
   res.json({ posts: formattedPosts });
 };
+
+export const getFeaturedProfile = async (req: Request, res: Response) => {
+  const userId = req.userId;
+
+  if(!userId) return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unathorized" });
+
+  const profiles = await prisma.user.findMany({
+   take: 5,
+   orderBy: {
+    followers: {
+      _count: "desc"
+    }
+   },
+
+   select: {
+    id: true,
+    username: true,
+    image: true,
+    _count: {
+      select: {
+        followers:  true
+      }
+    }
+   }
+  });
+
+ const following = await prisma.follow.findMany({
+  where: {
+    followerId: userId,
+    followingId: {
+      in: profiles.map((p) => p.id),
+    }
+  },
+  select: {
+    followingId: true
+  }
+ });
+
+ const followingSet = new Set(following.map((f) => f.followingId));
+
+const result = profiles.map((profile) => ({
+  ...profile,
+  isFollowing: followingSet.has(profile.id),
+}));
+
+  return res.json(result);
+};

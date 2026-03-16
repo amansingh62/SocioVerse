@@ -14,7 +14,7 @@ export const createPost = async (req: Request, res: Response) => {
   const userId = req.userId;
   const { content, mediaUrl, mediaType } = req.body;
 
-  const hashtags = extractHashtags(content);
+  const hashtags = [...new Set(extractHashtags(content))];
 
   const post = await prisma.post.create({
     data: {
@@ -45,29 +45,47 @@ export const createPost = async (req: Request, res: Response) => {
     })
   };
 
-  const fullPost = await prisma.post.findUnique({
-    where: { id: post.id },
-      include: {
-      author: {
-        select: {
-          id: true,
-          username: true,
-          image: true,
-        },
-      },
-      _count: {
-        select: {
-          likes: true,
-          comments: true,
-        },
+const fullPost = await prisma.post.findUnique({
+  where: { id: post.id },
+  include: {
+    author: {
+      select: {
+        id: true,
+        username: true,
+        image: true,
       },
     },
-  })
+    hashtags: {
+      include: {
+        hashTag: true,
+      },
+    },
+    _count: {
+      select: {
+        likes: true,
+        comments: true,
+      },
+    },
+  },
+});
+
+ const formattedPost = {
+    ...fullPost,
+    hashtags: fullPost?.hashtags.map((h) => h.hashTag.tag) || [],
+  };
+
+    const trendingHashtags = await prisma.hashTag.findMany({
+    orderBy: {
+      count: "desc",
+    },
+    take: 5,
+  });
 
   const io = getIO();
-  io.emit("post:created", fullPost);
+  io.emit("post:created", formattedPost);
+  io.emit("hashtags:updated", trendingHashtags);
 
-  return res.status(StatusCodes.CREATED).json(fullPost);
+  return res.status(StatusCodes.CREATED).json(formattedPost);
 };
 
 export const deletePost = async (req: Request, res: Response) => {
@@ -79,6 +97,27 @@ export const deletePost = async (req: Request, res: Response) => {
       .status(StatusCodes.UNAUTHORIZED)
       .json({ message: "Unauthorized" });
   }
+
+  const relations = await prisma.postHashTag.findMany({
+    where: { postId: id },
+  });
+
+  await Promise.all(
+    relations.map((relation) =>
+      prisma.hashTag.update({
+        where: { id: relation.hashtagId },
+        data: {
+          count: {
+            decrement: 1,
+          },
+        },
+      })
+    )
+  );
+
+  await prisma.postHashTag.deleteMany({
+    where: { postId: id },
+  });
 
   const result = await prisma.post.deleteMany({
     where: {
@@ -92,6 +131,26 @@ export const deletePost = async (req: Request, res: Response) => {
       .status(StatusCodes.FORBIDDEN)
       .json({ message: "Post not found or not allowed" });
   }
+
+  await prisma.hashTag.deleteMany({
+    where: {
+      count: {
+        lte: 0,
+      },
+    },
+  });
+
+  const trending = await prisma.hashTag.findMany({
+    orderBy: {
+      count: "desc",
+    },
+    take: 5,
+  });
+
+  const io = getIO();
+
+  io.emit("post:deleted", id);
+  io.emit("hashtags:updated", trending);
 
   return res.status(StatusCodes.OK).json({
     message: "Post deleted successfully",
@@ -390,6 +449,12 @@ export const getFeed = async (req: Request, res: Response) => {
         },
       },
 
+        hashtags: {
+    include: {
+      hashTag: true,
+    },
+  },
+
       comments: {
         take: 3,
         orderBy: {
@@ -424,28 +489,24 @@ export const getFeed = async (req: Request, res: Response) => {
     },
   });
 
-  const formattedPosts = posts.map(
-    ({
-      id,
-      savedBy,
-      comments,
-      _count,
-      ...post
-    }: {
-      id: string;
-      savedBy: { id: string }[];
-      comments: unknown[];
-      _count: { likes: number; comments: number };
-      [key: string]: unknown;
-    }) => ({
-      id,
-      ...post,
-      comments,
-      _count,
-      isSaved: Boolean(savedBy?.length),
-      hasMoreComments: _count.comments > comments.length,
-    }),
-  );
+ const formattedPosts = posts.map(
+  ({
+    id,
+    savedBy,
+    comments,
+    _count,
+    hashtags,
+    ...post
+  }) => ({
+    id,
+    ...post,
+    comments,
+    _count,
+    hashtags: hashtags.map((h) => h.hashTag.tag),
+    isSaved: Boolean(savedBy?.length),
+    hasMoreComments: _count.comments > comments.length,
+  })
+);
 
   const nextCursor =
     formattedPosts.length > Number(limit)
@@ -486,6 +547,13 @@ export const getExploreFeed = async (req: Request, res: Response) => {
         },
       },
 
+       hashtags: {
+    include: {
+      hashTag: true,
+    },
+  },
+
+
       comments: {
         take: 3,
         orderBy: {
@@ -521,14 +589,15 @@ export const getExploreFeed = async (req: Request, res: Response) => {
   });
 
   const formattedPosts = posts.map(
-    ({ savedBy, comments, _count, ...post }) => ({
-      ...post,
-      comments,
-      _count,
-      isSaved: Boolean(savedBy?.length),
-      hasMoreComments: _count.comments > comments.length,
-    }),
-  );
+  ({ savedBy, comments, _count, hashtags, ...post }) => ({
+    ...post,
+    comments,
+    _count,
+    hashtags: hashtags.map((h) => h.hashTag.tag),
+    isSaved: Boolean(savedBy?.length),
+    hasMoreComments: _count.comments > comments.length,
+  })
+);
 
   const nextCursor =
     formattedPosts.length > Number(limit)
@@ -680,16 +749,10 @@ export const getPostsByHashtags = async (req: Request, res: Response) => {
         },
       },
     }, 
-    include: {
-      author: true,
-      _count: {
-        select: {
-          likes: true,
-          comments: true,
-        },
-      },
-    },
+   select: {
+    id: true
+   },
   });
 
   res.json(posts);
-}
+};
