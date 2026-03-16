@@ -21,22 +21,20 @@ export default function SearchBar() {
   const [selectedIndex, setSelectedIndex] = useState(-1);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleSearch = (value: string) => {
     setQuery(value);
     setSelectedIndex(-1);
-
     if (debounceRef.current) clearTimeout(debounceRef.current);
-
     if (!value) {
       setUsers([]);
       return;
     }
-
     debounceRef.current = setTimeout(async () => {
       const { data } = await api.get<User[]>(
-        `/user/search?q=${encodeURIComponent(value)}`
+        `/user/search?q=${encodeURIComponent(value)}`,
       );
       setUsers(data);
     }, 100);
@@ -48,95 +46,153 @@ export default function SearchBar() {
       if (exists) return prev;
       return [user, ...prev].slice(0, 6);
     });
-
     setQuery("");
     setUsers([]);
-
+    setFocused(false);
     router.push(`/dashboard/profile/${user.id}`);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const list = query ? users : recent;
-
     if (!list.length) return;
-
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      setSelectedIndex((prev) => (prev + 1) % list.length);
+      setSelectedIndex((p) => (p + 1) % list.length);
     }
-
     if (e.key === "ArrowUp") {
       e.preventDefault();
-      setSelectedIndex((prev) =>
-        prev <= 0 ? list.length - 1 : prev - 1
-      );
+      setSelectedIndex((p) => (p <= 0 ? list.length - 1 : p - 1));
     }
-
-    if (e.key === "Enter" && selectedIndex >= 0) {
+    if (e.key === "Enter" && selectedIndex >= 0)
       selectUser(list[selectedIndex]);
-    }
   };
-
-  const clearRecent = () => setRecent([]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (!inputRef.current?.contains(e.target as Node)) {
+      if (
+        !inputRef.current?.contains(e.target as Node) &&
+        !dropdownRef.current?.contains(e.target as Node)
+      )
         setFocused(false);
-      }
     };
-
-    document.addEventListener("click", handler);
-    return () => document.removeEventListener("click", handler);
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, []);
+
+  const handleLogout = async () => {
+    await api.post("/auth/logout");
+    router.replace("/login");
+  };
 
   return (
     <header
-      className="top-0 z-50 w-full"
       style={{
-        background: "linear-gradient(180deg,#c63c8c 0%,#a62c74 100%)",
-        backdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(255,255,255,0.15)",
+        position: "sticky",
+        top: 0,
+        zIndex: 50,
+        width: "100%",
+        background: "linear-gradient(180deg, #c63c8c 0%, #a62c74 100%)",
+        borderBottom: "1px solid rgba(255,255,255,0.12)",
+        boxShadow: "0 2px 20px rgba(233,30,140,0.25)",
       }}
     >
-      <div className="flex justify-center px-8 py-2">
-        <div className="w-full max-w-xl relative">
-
-          <div
-            className="flex items-center gap-3 px-4 py-2.5 rounded-2xl"
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          padding: "0 32px",
+          height: "60px",
+          gridTemplateColumns: "1fr auto 1fr",
+        }}
+      >
+        <div
+          onClick={() => router.push("/dashboard")}
+          style={{
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            minWidth: 0,
+          }}
+        >
+          <Image
+            src="/logo.png"
+            alt="Socioverse"
+            width={110}
+            height={110}
             style={{
-              background: "rgba(255,255,255,0.15)",
-              border: "1px solid rgba(255,255,255,0.25)",
+              width: "110px",
+              height: "110px",
+              objectFit: "contain",
+              display: "block",
+            }}
+          />
+        </div>
+
+        <div
+          style={{
+            position: "absolute",
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: "360px",
+          }}
+        >
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              padding: "10px 18px",
+              borderRadius: "50px",
+              background: "rgba(255,255,255,0.18)",
+              border: "1px solid rgba(255,255,255,0.30)",
             }}
           >
             <svg
               viewBox="0 0 24 24"
-              stroke="white"
-              strokeWidth="1.8"
+              width="15"
+              height="15"
               fill="none"
-              className="w-4 h-4"
+              stroke="rgba(255,255,255,0.85)"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
               <circle cx="11" cy="11" r="8" />
               <path d="M21 21l-4.35-4.35" />
             </svg>
-
             <input
               ref={inputRef}
               value={query}
               onChange={(e) => handleSearch(e.target.value)}
               onFocus={() => setFocused(true)}
               onKeyDown={handleKeyDown}
-              placeholder="Search users..."
-              className="flex-1 bg-transparent outline-none text-white text-[13.5px]"
+              placeholder="Search users…"
+              style={{
+                flex: 1,
+                background: "transparent",
+                border: "none",
+                outline: "none",
+                fontSize: "13.5px",
+                fontFamily: "'DM Sans', sans-serif",
+                color: "#fff",
+                fontWeight: 500,
+              }}
             />
-
             {query && (
               <button
                 onClick={() => {
                   setQuery("");
                   setUsers([]);
                 }}
-                className="text-white"
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "rgba(255,255,255,0.75)",
+                  fontSize: "14px",
+                  lineHeight: 1,
+                  padding: 0,
+                }}
               >
                 ✕
               </button>
@@ -145,24 +201,50 @@ export default function SearchBar() {
 
           {focused && (
             <div
-              className="absolute w-full mt-2 rounded-xl overflow-hidden"
+              ref={dropdownRef}
               style={{
-                background: "white",
-                boxShadow: "0 12px 32px rgba(0,0,0,0.18)",
+                position: "absolute",
+                top: "calc(100% + 8px)",
+                left: 0,
+                right: 0,
+                background: "#fff",
+                borderRadius: "16px",
+                overflow: "hidden",
+                boxShadow: "0 16px 40px rgba(0,0,0,0.14)",
               }}
             >
               {!query && recent.length > 0 && (
                 <>
-                  <div className="flex justify-between px-4 py-2 text-xs text-gray-500">
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      padding: "10px 16px 6px",
+                      fontFamily: "'DM Sans', sans-serif",
+                      fontSize: "11px",
+                      color: "#AAAABC",
+                      fontWeight: 700,
+                      letterSpacing: "0.05em",
+                      textTransform: "uppercase",
+                    }}
+                  >
                     <span>Recent</span>
                     <button
-                      onClick={clearRecent}
-                      className="text-pink-500"
+                      onClick={() => setRecent([])}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        color: "#E91E8C",
+                        fontSize: "12px",
+                        fontWeight: 600,
+                        fontFamily: "'DM Sans', sans-serif",
+                      }}
                     >
                       Clear
                     </button>
                   </div>
-
                   {recent.map((user, i) => (
                     <UserItem
                       key={user.id}
@@ -173,7 +255,6 @@ export default function SearchBar() {
                   ))}
                 </>
               )}
-
               {query &&
                 users.map((user, i) => (
                   <UserItem
@@ -183,14 +264,46 @@ export default function SearchBar() {
                     onClick={() => selectUser(user)}
                   />
                 ))}
-
               {query && users.length === 0 && (
-                <div className="px-4 py-3 text-sm text-gray-400">
+                <div
+                  style={{
+                    padding: "16px",
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontSize: "13px",
+                    color: "#AAAABC",
+                    textAlign: "center",
+                  }}
+                >
                   No users found
                 </div>
               )}
             </div>
           )}
+        </div>
+
+        <div
+          style={{ marginLeft: "auto", display: "flex", alignItems: "center" }}
+        >
+          <button
+            onClick={handleLogout}
+            className="
+    flex items-center gap-2 px-3.5 py-2.5 rounded-xl
+    border border-white/60 text-white
+    text-sm font-medium transition-all duration-200
+    hover:bg-white hover:text-[#c63c8c]
+  "
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.6"
+              className="w-4 h-4"
+            >
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+            </svg>
+            Sign out
+          </button>
         </div>
       </div>
     </header>
@@ -209,26 +322,81 @@ function UserItem({
   return (
     <div
       onClick={onClick}
-      className={`flex items-center gap-3 px-4 py-2 cursor-pointer transition-colors
-      ${active ? "bg-pink-100" : "hover:bg-pink-50"}`}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "11px",
+        padding: "10px 16px",
+        cursor: "pointer",
+        background: active ? "#FCE4F1" : "transparent",
+        transition: "background 0.15s",
+      }}
+      onMouseEnter={(e) => {
+        if (!active)
+          (e.currentTarget as HTMLDivElement).style.background = "#FBE9F0";
+      }}
+      onMouseLeave={(e) => {
+        if (!active)
+          (e.currentTarget as HTMLDivElement).style.background = "transparent";
+      }}
     >
       {user.image ? (
         <Image
           src={user.image}
           alt={user.username}
-          width={32}
-          height={32}
-          className="w-8 h-8 rounded-full object-cover"
+          width={34}
+          height={34}
+          style={{
+            width: "34px",
+            height: "34px",
+            borderRadius: "50%",
+            objectFit: "cover",
+            flexShrink: 0,
+          }}
         />
       ) : (
-        <div className="w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center text-white text-sm font-bold">
+        <div
+          style={{
+            width: "34px",
+            height: "34px",
+            borderRadius: "50%",
+            flexShrink: 0,
+            background: "#E91E8C",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#fff",
+            fontWeight: 700,
+            fontSize: "13px",
+            fontFamily: "'DM Sans', sans-serif",
+          }}
+        >
           {user.username[0].toUpperCase()}
         </div>
       )}
-
-      <span className="text-sm text-gray-800 font-medium">
-        @{user.username}
-      </span>
+      <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+        <span
+          style={{
+            fontFamily: "'DM Serif Display', Georgia, serif",
+            fontSize: "14px",
+            fontWeight: 600,
+            color: "#1C1C2E",
+            lineHeight: 1,
+          }}
+        >
+          {user.username}
+        </span>
+        <span
+          style={{
+            fontFamily: "'DM Sans', sans-serif",
+            fontSize: "12px",
+            color: "#E91E8C",
+            fontWeight: 500,
+          }}
+        >
+          @{user.username.toLowerCase()}
+        </span>
+      </div>
     </div>
   );
 }

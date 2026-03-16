@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
-import api from "../lib/axios";
 import { useAuthStore } from "@/app/store/authStore";
 import { initSocket } from "../lib/socket";
 import { usePostStore } from "../store/postStore";
@@ -154,10 +153,7 @@ export default function DashboardLayout({
     };
   }, [user]);
 
-  const handleLogout = async () => {
-    await api.post("/auth/logout");
-    router.replace("/login");
-  };
+
 
   if (isLoading) {
     return (
@@ -232,27 +228,6 @@ ${pathname === href ? "bg-[#E056A4] text-[#fff]" : "text-[#000] hover:bg-[#E056A
 
           <div className="flex flex-col gap-4">
             <SupportChat />
-
-            <button
-              onClick={handleLogout}
-              className="
-      flex items-center gap-2 px-3.5 py-2.5 rounded-xl
-      border border-[#E056A4]/40 text-[#E056A4]
-      text-sm font-medium transition-all duration-200
-      hover:bg-[#E056A4] hover:text-white
-    "
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                className="w-4 h-4"
-              >
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
-              </svg>
-              Sign out
-            </button>
           </div>
         </aside>
 
