@@ -11,7 +11,6 @@ export default function Dashboard() {
   return (
     <div className="max-w-[600px] mx-auto flex flex-col gap-7">
 
-      {/* Page header */}
       <div>
         <h1 className="font-display text-[42px] font-light text-[#E056A4] leading-none tracking-tight">
           Your Feed
@@ -22,7 +21,14 @@ export default function Dashboard() {
         </p>
       </div>
 
-      {/* Feed Switcher */}
+      {tab === "feed" && <CreatePostModal />}
+
+      <div className="flex items-center gap-3 text-[11px] text-[#E056A4]/70 tracking-[0.08em] uppercase">
+        <span className="flex-1 h-px bg-[#E056A4]/30" />
+        <span>{tab === "feed" ? "Recent posts" : "Explore posts"}</span>
+        <span className="flex-1 h-px bg-[#E056A4]/30" />
+      </div>
+
       <div className="flex gap-2 bg-[#E056A4]/10 p-1 rounded-xl">
 
         <button
@@ -49,17 +55,6 @@ export default function Dashboard() {
 
       </div>
 
-      {/* Create post only for Following feed */}
-      {tab === "feed" && <CreatePostModal />}
-
-      {/* Divider */}
-      <div className="flex items-center gap-3 text-[11px] text-[#E056A4]/70 tracking-[0.08em] uppercase">
-        <span className="flex-1 h-px bg-[#E056A4]/30" />
-        <span>{tab === "feed" ? "Recent posts" : "Explore posts"}</span>
-        <span className="flex-1 h-px bg-[#E056A4]/30" />
-      </div>
-
-      {/* Feed */}
       {tab === "feed" ? <FeedList /> : <ExploreFeedList />}
 
     </div>

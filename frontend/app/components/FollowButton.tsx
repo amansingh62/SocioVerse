@@ -38,19 +38,22 @@ export default function FollowButton({
 
   return (
     <button
-      onClick={handleToggle}
-      disabled={loading}
-      className={`px-4 py-2 rounded ${
-        profile.isFollowing
-          ? "bg-gray-300 text-black"
-          : "bg-black text-white"
-      }`}
-    >
-      {loading
-        ? "Processing..."
-        : profile.isFollowing
-        ? "Unfollow"
-        : "Follow"}
-    </button>
+  onClick={handleToggle}
+  disabled={loading}
+  className={`
+    px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200
+    ${
+      profile.isFollowing
+        ? "bg-white text-[#c63c8c]"
+        : "bg-gradient-to-r from-[#E056A4] to-[#ff7bbd] text-white hover:bg-none hover:bg-white hover:text-[#c63c8c] hover:border-[#E056A4]"
+    }
+  `}
+>
+  {loading
+    ? "Processing..."
+    : profile.isFollowing
+    ? "Following"
+    : "Follow"}
+</button>
   );
 }
