@@ -7,15 +7,36 @@ import { usePostStore } from "../store/postStore";
 import { useAuthStore } from "../store/authStore";
 import Image from "next/image";
 
+const C = {
+  accent:     "#E91E8C",
+  accentDeep: "#C2185B",
+  accentPale: "#FCE4F1",
+  accentGlow: "rgba(233,30,140,0.12)",
+  pageBg:     "#FBE9F0",
+  card:       "#FFFFFF",
+  border:     "#F3D0E3",
+  ink:        "#1C1C2E",
+  inkMid:     "#555566",
+  inkMuted:   "#AAAABC",
+  font:       "'DM Sans', sans-serif",
+  fontSerif:  "'DM Serif Display', Georgia, serif",
+};
+
+// Avatar size + gap = indent for content/actions
+const AVATAR   = 46; // px
+const GAP      = 13; // px
+const INDENT   = AVATAR + GAP; // 59px — but we shave a little: use 52
+
 export default function PostCard({ post }: { post: Post }) {
   const { user } = useAuthStore();
 
   const [showComments, setShowComments] = useState(false);
   const [commentText,  setCommentText]  = useState("");
   const [replyTo,      setReplyTo]      = useState<string | null>(null);
+  const [taFocused,    setTaFocused]    = useState(false);
 
-  const storePost    = usePostStore((s) => s.postsById[post.id]);
-  const currentPost  = storePost ?? post;
+  const storePost   = usePostStore((s) => s.postsById[post.id]);
+  const currentPost = storePost ?? post;
 
   const toggleLike       = usePostStore((s) => s.toggleLike);
   const toggleSave       = usePostStore((s) => s.toggleSave);
@@ -33,182 +54,156 @@ export default function PostCard({ post }: { post: Post }) {
 
   const comments       = currentPost.comments ?? [];
   const parentComments = comments.filter((c) => !c.parentId);
-  const replies        = comments.filter((c) =>  c.parentId);
+  const replies        = comments.filter((c) => !!c.parentId);
 
   return (
     <>
-      <article
-        className="rounded-2xl p-5 flex flex-col gap-4 transition-all duration-200 group"
-        style={{
-          background: "rgba(16,9,28,0.62)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
-          border: "1px solid rgba(139,92,246,0.13)",
-        }}
-        onMouseEnter={(e) => {
-          (e.currentTarget as HTMLElement).style.border = "1px solid rgba(139,92,246,0.28)";
-          (e.currentTarget as HTMLElement).style.background = "rgba(22,12,40,0.72)";
-        }}
-        onMouseLeave={(e) => {
-          (e.currentTarget as HTMLElement).style.border = "1px solid rgba(139,92,246,0.13)";
-          (e.currentTarget as HTMLElement).style.background = "rgba(16,9,28,0.62)";
-        }}
-      >
-        {/* ── Author ── */}
+      <article style={{
+        background:    C.card,
+        borderRadius:  "20px",
+        padding:       "22px 24px 18px",
+        display:       "flex",
+        flexDirection: "column",
+        boxShadow:     "0 2px 16px rgba(233,30,140,0.07), 0 1px 3px rgba(0,0,0,0.04)",
+      }}>
+
+        {/* ── Author row ── */}
         <Link
           href={`/dashboard/profile/${currentPost.author.id}`}
-          className="flex items-center gap-3 no-underline"
-          style={{ textDecoration: "none" }}
+          style={{ display:"flex", alignItems:"center", gap:`${GAP}px`, textDecoration:"none", marginBottom:"14px" }}
         >
-          <div
-            className="w-11 h-11 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-base overflow-hidden"
-            style={{
-              background: "linear-gradient(135deg,#7c3aed,#a855f7)",
-              border: "2px solid rgba(139,92,246,0.32)",
-              boxShadow: "0 2px 12px rgba(124,58,237,0.22)",
-            }}
-          >
-            {currentPost.author.image ? (
-              <Image
-                src={currentPost.author.image}
-                width={44}
-                height={44}
-                alt={currentPost.author.username}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              currentPost.author.username?.[0]?.toUpperCase()
-            )}
+          {/* Avatar — thin gradient ring */}
+          <div style={{ position:"relative", flexShrink:0, width:`${AVATAR}px`, height:`${AVATAR}px` }}>
+            <div style={{
+              position:"absolute", inset:0, borderRadius:"50%",
+              background:`linear-gradient(135deg, ${C.accent}, #FF8EC7)`,
+              padding:"1.5px", display:"flex", alignItems:"center", justifyContent:"center",
+            }}>
+              <div style={{
+                width:"100%", height:"100%", borderRadius:"50%", overflow:"hidden",
+                display:"flex", alignItems:"center", justifyContent:"center",
+                background:C.accent, color:"#fff", fontWeight:700,
+                fontSize:"16px", fontFamily:C.font, border:"2px solid #fff",
+              }}>
+                {currentPost.author.image ? (
+                  <Image src={currentPost.author.image} width={AVATAR} height={AVATAR}
+                    alt={currentPost.author.username}
+                    style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                ) : (
+                  currentPost.author.username?.[0]?.toUpperCase()
+                )}
+              </div>
+            </div>
           </div>
 
-          <div>
-            <p
-              className="text-[15px] font-semibold leading-none transition-colors duration-200"
-              style={{
-                fontFamily: "Syne, sans-serif",
-                color: "rgba(237,233,254,0.92)",
-              }}
-            >
+          <div style={{ display:"flex", flexDirection:"column", gap:"3px" }}>
+            <span style={{ fontFamily:C.fontSerif, fontSize:"15.5px", fontWeight:700, color:C.ink, letterSpacing:"-0.01em", lineHeight:1 }}>
               {currentPost.author.username}
-            </p>
-            <p className="text-[11.5px] mt-0.5" style={{ color: "rgba(139,92,246,0.55)" }}>
+            </span>
+            <span style={{ fontFamily:C.font, fontSize:"12px", color:C.accent, fontWeight:500 }}>
               @{currentPost.author.username?.toLowerCase()}
-            </p>
+            </span>
           </div>
 
-          {/* Timestamp — right aligned */}
-          <span className="ml-auto text-[11px]" style={{ color: "rgba(139,92,246,0.35)", fontFamily: "DM Sans, sans-serif" }}>
+          <div style={{
+            marginLeft:"auto", padding:"4px 11px", borderRadius:"20px",
+            background:C.accentPale, fontFamily:C.font, fontSize:"11px",
+            fontWeight:600, color:C.accent, whiteSpace:"nowrap",
+          }}>
             {currentPost.createdAt
-              ? new Date(currentPost.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })
+              ? new Date(currentPost.createdAt).toLocaleDateString(undefined, { month:"short", day:"numeric" })
               : ""}
-          </span>
+          </div>
         </Link>
 
-        {/* ── Content ── */}
+        {/* ── Content — no left indent, full width ── */}
         {currentPost.content && (
-          <p
-            className="text-[13.5px] leading-[1.78] whitespace-pre-line"
-            style={{ color: "rgba(221,214,254,0.82)", fontFamily: "DM Sans, sans-serif" }}
-          >
+          <p style={{
+            fontFamily: C.font, fontSize:"14.5px", lineHeight:"1.85",
+            color:C.inkMid, whiteSpace:"pre-line", margin:"0 0 16px 0",
+          }}>
             {currentPost.content}
           </p>
         )}
 
         {/* ── Image ── */}
         {currentPost.mediaUrl && currentPost.mediaType === "IMAGE" && (
-          <div
-            className="rounded-xl overflow-hidden"
-            style={{ border: "1px solid rgba(139,92,246,0.12)" }}
-          >
-            <Image
-              src={currentPost.mediaUrl}
-              width={600}
-              height={400}
-              alt="post media"
-              className="w-full max-h-[340px] object-cover block"
-            />
+          <div style={{ borderRadius:"14px", overflow:"hidden", marginBottom:"16px", boxShadow:"0 4px 20px rgba(233,30,140,0.10)" }}>
+            <Image src={currentPost.mediaUrl} width={600} height={400} alt="post media"
+              style={{ width:"100%", maxHeight:"360px", objectFit:"cover", display:"block" }} />
           </div>
         )}
 
         {/* ── Video ── */}
         {currentPost.mediaUrl && currentPost.mediaType === "VIDEO" && (
-          <div
-            className="rounded-xl overflow-hidden"
-            style={{ border: "1px solid rgba(139,92,246,0.12)" }}
-          >
-            <video controls className="w-full max-h-[340px]">
+          <div style={{ borderRadius:"14px", overflow:"hidden", marginBottom:"16px" }}>
+            <video controls style={{ width:"100%", maxHeight:"360px", display:"block" }}>
               <source src={currentPost.mediaUrl} />
             </video>
           </div>
         )}
 
-        {/* ── Action bar ── */}
-        <div
-          className="flex items-center gap-2 pt-3"
-          style={{ borderTop: "1px solid rgba(139,92,246,0.09)" }}
-        >
-          {/* Like */}
-          <ActionBtn
-            active={currentPost.isLiked}
-            onClick={() => toggleLike(currentPost.id)}
-            activeColor="#f472b6"
-            activeBorder="rgba(244,114,182,0.30)"
-          >
-            <span className="text-[16px] leading-none select-none">
-              {currentPost.isLiked ? "♥" : "♡"}
-            </span>
-            <span>{currentPost._count.likes}</span>
-          </ActionBtn>
+        {/* ── Action bar — left-aligned, no indent ── */}
+        <div style={{ display:"flex", alignItems:"center", gap:"2px", marginLeft:"-8px" }}>
 
-          {/* Comment */}
-          <ActionBtn onClick={() => setShowComments(true)}>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-4 h-4">
+          {/* LIKE */}
+          <button onClick={() => toggleLike(currentPost.id)} style={{
+            display:"flex", alignItems:"center", gap:"6px",
+            padding:"7px 12px 7px 8px", borderRadius:"50px",
+            border:"none", background:"transparent", cursor:"pointer",
+          }}>
+            <svg viewBox="0 0 24 24" width="21" height="21"
+              fill={currentPost.isLiked ? C.accent : "none"}
+              stroke={currentPost.isLiked ? C.accent : C.inkMuted}
+              strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+            <span style={{ fontFamily:C.font, fontSize:"13px", fontWeight:600, color:currentPost.isLiked ? C.accent : C.inkMuted }}>
+              {currentPost._count.likes}
+            </span>
+          </button>
+
+          {/* COMMENT */}
+          <button onClick={() => setShowComments(true)} style={{
+            display:"flex", alignItems:"center", gap:"6px",
+            padding:"7px 12px 7px 8px", borderRadius:"50px",
+            border:"none", background:"transparent", cursor:"pointer",
+          }}>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none"
+              stroke={C.inkMuted} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
-            <span>{currentPost._count.comments}</span>
-          </ActionBtn>
+            <span style={{ fontFamily:C.font, fontSize:"13px", fontWeight:600, color:C.inkMuted }}>
+              {currentPost._count.comments}
+            </span>
+          </button>
 
-          {/* Save */}
-          <ActionBtn
-            active={currentPost.isSaved}
-            onClick={() => toggleSave(currentPost.id)}
-            activeColor="#a78bfa"
-            activeBorder="rgba(167,139,250,0.30)"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill={currentPost.isSaved ? "#a78bfa" : "none"}
-              stroke="currentColor"
-              strokeWidth="1.6"
-              className="w-4 h-4"
-            >
+          {/* SAVE */}
+          <button onClick={() => toggleSave(currentPost.id)} style={{
+            display:"flex", alignItems:"center", gap:"6px",
+            padding:"7px 12px 7px 8px", borderRadius:"50px",
+            border:"none", background:"transparent", cursor:"pointer",
+          }}>
+            <svg viewBox="0 0 24 24" width="19" height="19"
+              fill={currentPost.isSaved ? C.accent : "none"}
+              stroke={currentPost.isSaved ? C.accent : C.inkMuted}
+              strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
             </svg>
-            <span className="text-xs">{currentPost.isSaved ? "Saved" : "Save"}</span>
-          </ActionBtn>
+            <span style={{ fontFamily:C.font, fontSize:"13px", fontWeight:600, color:currentPost.isSaved ? C.accent : C.inkMuted }}>
+              {currentPost.isSaved ? "Saved" : "Save"}
+            </span>
+          </button>
 
-          {/* Delete — owner only */}
+          {/* DELETE */}
           {user?.id === currentPost.author.id && (
-            <button
-              onClick={() => deletePost(currentPost.id)}
-              className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-[12.5px] transition-all duration-200 cursor-pointer"
-              style={{
-                border: "1px solid rgba(239,68,68,0.18)",
-                background: "rgba(239,68,68,0.06)",
-                color: "rgba(252,165,165,0.7)",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = "rgba(239,68,68,0.12)";
-                (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(239,68,68,0.35)";
-                (e.currentTarget as HTMLButtonElement).style.color = "#fca5a5";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.background = "rgba(239,68,68,0.06)";
-                (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(239,68,68,0.18)";
-                (e.currentTarget as HTMLButtonElement).style.color = "rgba(252,165,165,0.7)";
-              }}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-3.5 h-3.5">
+            <button onClick={() => deletePost(currentPost.id)} style={{
+              marginLeft:"auto", display:"flex", alignItems:"center", justifyContent:"center",
+              width:"34px", height:"34px", borderRadius:"50%",
+              border:"none", background:"transparent", cursor:"pointer",
+              color:"rgba(220,50,50,0.35)",
+            }}>
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="3 6 5 6 21 6" />
                 <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
                 <path d="M10 11v6M14 11v6" />
@@ -219,249 +214,130 @@ export default function PostCard({ post }: { post: Post }) {
         </div>
       </article>
 
-      {/* ══════════════════ COMMENT MODAL ══════════════════ */}
+      {/* ══ COMMENT MODAL ══ */}
       {showComments && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-5"
-          style={{ background: "rgba(4,2,10,0.75)", backdropFilter: "blur(8px)" }}
+        <div style={{
+          position:"fixed", inset:0, zIndex:50, display:"flex",
+          alignItems:"center", justifyContent:"center", padding:"20px",
+          background:"rgba(20,5,15,0.45)", backdropFilter:"blur(8px)",
+        }}
           onClick={(e) => e.target === e.currentTarget && setShowComments(false)}
         >
-          <div
-            className="w-full max-w-[500px] max-h-[82vh] overflow-y-auto flex flex-col gap-5 p-7 rounded-[24px] no-scrollbar"
-            style={{
-              background: "rgba(14,8,26,0.97)",
-              backdropFilter: "blur(32px)",
-              WebkitBackdropFilter: "blur(32px)",
-              border: "1px solid rgba(139,92,246,0.22)",
-              boxShadow: "0 32px 80px rgba(4,2,10,0.70)",
-            }}
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between">
-              <h2
-                className="text-[20px] font-bold"
-                style={{ fontFamily: "Syne, sans-serif", color: "#ede9fe" }}
-              >
-                Comments
-              </h2>
-              <button
-                onClick={() => setShowComments(false)}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-xs transition-all duration-200"
-                style={{
-                  border: "1px solid rgba(139,92,246,0.22)",
-                  color: "rgba(167,139,250,0.6)",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.background = "rgba(139,92,246,0.12)";
-                  (e.currentTarget as HTMLButtonElement).style.color = "#c4b5fd";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.background = "transparent";
-                  (e.currentTarget as HTMLButtonElement).style.color = "rgba(167,139,250,0.6)";
-                }}
-              >
-                ✕
-              </button>
+          <div style={{
+            width:"100%", maxWidth:"490px", maxHeight:"80vh", overflowY:"auto",
+            display:"flex", flexDirection:"column", gap:"20px",
+            padding:"30px", borderRadius:"24px", background:"#FFFFFF",
+            boxShadow:"0 32px 80px rgba(20,5,15,0.18), 0 2px 12px rgba(233,30,140,0.10)",
+            border:`1px solid ${C.border}`,
+          }}>
+
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+              <h2 style={{ fontFamily:C.fontSerif, fontSize:"22px", fontWeight:700, color:C.ink, margin:0, letterSpacing:"-0.02em" }}>Comments</h2>
+              <button onClick={() => setShowComments(false)} style={{
+                width:"34px", height:"34px", borderRadius:"50%", border:`1px solid ${C.border}`,
+                background:"transparent", color:C.inkMuted, cursor:"pointer", fontSize:"14px",
+                display:"flex", alignItems:"center", justifyContent:"center",
+              }}>✕</button>
             </div>
 
-            {/* Reply indicator */}
             {replyTo && (
-              <div
-                className="flex items-center gap-2 px-3 py-2 rounded-xl text-[12.5px]"
-                style={{
-                  background: "rgba(139,92,246,0.10)",
-                  border: "1px solid rgba(139,92,246,0.22)",
-                  color: "#a78bfa",
-                }}
-              >
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-3.5 h-3.5">
-                  <polyline points="9 17 4 12 9 7" />
-                  <path d="M20 18v-2a4 4 0 0 0-4-4H4" />
-                </svg>
+              <div style={{
+                display:"flex", alignItems:"center", gap:"8px", padding:"9px 14px",
+                borderRadius:"12px", background:C.accentPale, fontSize:"12.5px",
+                color:C.accent, fontFamily:C.font, fontWeight:500,
+              }}>
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>
                 Replying to comment
-                <button
-                  onClick={() => { setReplyTo(null); setCommentText(""); }}
-                  className="ml-auto underline underline-offset-2 transition-colors"
-                  style={{ color: "rgba(167,139,250,0.6)" }}
-                >
-                  Cancel
-                </button>
+                <button onClick={() => { setReplyTo(null); setCommentText(""); }} style={{ marginLeft:"auto", background:"none", border:"none", cursor:"pointer", color:C.accentDeep, fontFamily:C.font, fontSize:"12px", fontWeight:600 }}>Cancel</button>
               </div>
             )}
 
-            {/* Input area */}
-            <div className="flex flex-col gap-2.5">
+            <div style={{ display:"flex", flexDirection:"column", gap:"10px" }}>
               <textarea
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) submitComment(); }}
-                placeholder={replyTo ? "Write a reply…" : "Write something… (⌘↵ to send)"}
+                onKeyDown={(e) => { if (e.key==="Enter" && (e.metaKey||e.ctrlKey)) submitComment(); }}
+                onFocus={() => setTaFocused(true)}
+                onBlur={() => setTaFocused(false)}
+                placeholder={replyTo ? "Write a reply…" : "Share your thoughts…"}
                 rows={2}
-                className="w-full rounded-xl px-4 py-3 outline-none resize-none text-[13.5px] leading-relaxed transition-all duration-200"
                 style={{
-                  background: "rgba(139,92,246,0.07)",
-                  border: "1px solid rgba(139,92,246,0.20)",
-                  color: "#ede9fe",
-                  fontFamily: "DM Sans, sans-serif",
-                  caretColor: "#a855f7",
+                  width:"100%", borderRadius:"14px", padding:"12px 16px", outline:"none",
+                  resize:"none", fontSize:"13.5px", lineHeight:"1.65", fontFamily:C.font,
+                  color:C.ink, background:C.pageBg,
+                  border:`1.5px solid ${taFocused ? C.accent : C.border}`,
+                  boxShadow: taFocused ? `0 0 0 4px ${C.accentGlow}` : "none",
+                  transition:"border-color 0.2s, box-shadow 0.2s",
+                  boxSizing:"border-box", caretColor:C.accent,
                 }}
-                onFocus={(e) => { (e.target as HTMLTextAreaElement).style.borderColor = "rgba(139,92,246,0.45)"; }}
-                onBlur={(e)  => { (e.target as HTMLTextAreaElement).style.borderColor = "rgba(139,92,246,0.20)"; }}
               />
-              <button
-                onClick={submitComment}
-                className="self-end px-5 py-2 rounded-xl text-[13px] font-bold text-white transition-all duration-200"
-                style={{
-                  background: "linear-gradient(135deg,#7c3aed,#a855f7)",
-                  border: "1px solid rgba(168,85,247,0.40)",
-                  boxShadow: "0 4px 16px rgba(124,58,237,0.30)",
-                  fontFamily: "DM Sans, sans-serif",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.background = "linear-gradient(135deg,#6d28d9,#9333ea)";
-                  (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLButtonElement).style.background = "linear-gradient(135deg,#7c3aed,#a855f7)";
-                  (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)";
-                }}
-              >
-                {replyTo ? "Reply ◆" : "Send ◆"}
+              <button onClick={submitComment} style={{
+                alignSelf:"flex-end", padding:"9px 22px", borderRadius:"50px",
+                border:"none", background:C.accent, color:"#fff",
+                fontSize:"13px", fontWeight:700, fontFamily:C.font,
+                cursor:"pointer", letterSpacing:"0.02em",
+                boxShadow:`0 4px 16px rgba(233,30,140,0.30)`,
+              }}>
+                {replyTo ? "Reply" : "Post"}
               </button>
             </div>
 
-            {/* View all */}
             {currentPost.hasMoreComments && (
-              <button
-                onClick={() => fetchAllComments(currentPost.id)}
-                className="text-[12.5px] self-start underline-offset-2 transition-colors"
-                style={{ color: "#a78bfa" }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#c4b5fd"; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#a78bfa"; }}
-              >
-                View all {currentPost._count.comments} comments
-              </button>
+              <button onClick={() => fetchAllComments(currentPost.id)} style={{
+                background:"none", border:"none", cursor:"pointer", fontFamily:C.font,
+                fontSize:"12.5px", color:C.accent, fontWeight:600, alignSelf:"flex-start",
+                padding:0, textDecoration:"underline", textUnderlineOffset:"3px",
+              }}>View all {currentPost._count.comments} comments</button>
             )}
 
-            {/* Divider */}
-            <div style={{ height: 1, background: "rgba(139,92,246,0.10)" }} />
-
-            {/* Comment list */}
-            <div className="flex flex-col gap-5">
+            <div style={{ display:"flex", flexDirection:"column", gap:"16px" }}>
               {parentComments.length === 0 && (
-                <p
-                  className="text-center text-[13px] italic py-6"
-                  style={{ color: "rgba(139,92,246,0.45)" }}
-                >
-                  No comments yet — be the first ◆
+                <p style={{ textAlign:"center", fontFamily:C.font, fontSize:"13.5px", color:C.inkMuted, padding:"24px 0", margin:0 }}>
+                  No comments yet — be the first! 💬
                 </p>
               )}
 
               {parentComments.map((comment) => {
                 const username       = comment.user?.username ?? "User";
-                const image          = comment.user?.image ?? null;
+                const image          = comment.user?.image    ?? null;
                 const isCommentOwner = user?.id === comment.user?.id;
                 const isPostOwner    = user?.id === currentPost.author.id;
                 const childReplies   = replies.filter((r) => r.parentId === comment.id);
 
                 return (
-                  <div key={comment.id} className="flex flex-col gap-2.5">
-                    {/* Parent comment */}
-                    <div className="flex gap-2.5">
-                      <div
-                        className="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-[12px] overflow-hidden"
-                        style={{
-                          background: "linear-gradient(135deg,#7c3aed,#a855f7)",
-                          border: "1.5px solid rgba(139,92,246,0.30)",
-                        }}
-                      >
-                        {image
-                          ? <Image src={image} width={32} height={32} alt={username} className="w-full h-full object-cover" />
-                          : username[0]?.toUpperCase()}
+                  <div key={comment.id} style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
+                    <div style={{ display:"flex", gap:"11px" }}>
+                      <div style={{ width:"34px", height:"34px", borderRadius:"50%", flexShrink:0, overflow:"hidden", display:"flex", alignItems:"center", justifyContent:"center", background:C.accent, color:"#fff", fontWeight:700, fontSize:"13px", fontFamily:C.font, border:`1.5px solid ${C.accentPale}` }}>
+                        {image ? <Image src={image} width={34} height={34} alt={username} style={{ width:"100%", height:"100%", objectFit:"cover" }} /> : username[0]?.toUpperCase()}
                       </div>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="inline-flex flex-wrap gap-x-1.5 items-baseline">
-                          <span
-                            className="font-semibold text-[13.5px]"
-                            style={{ fontFamily: "Syne, sans-serif", color: "#e9d5ff" }}
-                          >
-                            {username}
-                          </span>
-                          <span
-                            className="text-[13px] leading-relaxed"
-                            style={{ color: "rgba(221,214,254,0.75)", fontFamily: "DM Sans, sans-serif" }}
-                          >
-                            {comment.content}
-                          </span>
+                      <div style={{ flex:1 }}>
+                        <div style={{ background:C.pageBg, borderRadius:"4px 16px 16px 16px", padding:"10px 14px", display:"inline-block", maxWidth:"100%" }}>
+                          <span style={{ fontFamily:C.fontSerif, fontSize:"13.5px", fontWeight:700, color:C.ink, marginRight:"6px" }}>{username}</span>
+                          <span style={{ fontFamily:C.font, fontSize:"13.5px", color:C.inkMid, lineHeight:"1.6" }}>{comment.content}</span>
+                          {comment.optimistic && <span style={{ fontFamily:C.font, fontSize:"10px", color:C.inkMuted, marginLeft:"6px", fontStyle:"italic" }}>sending…</span>}
                         </div>
-
-                        {comment.optimistic && (
-                          <span className="text-[10px] italic ml-1" style={{ color: "rgba(139,92,246,0.45)" }}>
-                            sending…
-                          </span>
-                        )}
-
-                        <div className="flex gap-3 mt-1.5">
-                          <button
-                            onClick={() => { setReplyTo(comment.id); setCommentText(`@${username} `); }}
-                            className="text-[11.5px] transition-colors"
-                            style={{ color: "rgba(139,92,246,0.50)" }}
-                            onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#a78bfa"; }}
-                            onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "rgba(139,92,246,0.50)"; }}
-                          >
-                            Reply
-                          </button>
+                        <div style={{ display:"flex", gap:"14px", marginTop:"5px", paddingLeft:"4px" }}>
+                          <button onClick={() => { setReplyTo(comment.id); setCommentText(`@${username} `); }} style={{ background:"none", border:"none", cursor:"pointer", fontFamily:C.font, fontSize:"12px", color:C.inkMuted, fontWeight:600, padding:0 }}>Reply</button>
                           {(isCommentOwner || isPostOwner) && (
-                            <button
-                              onClick={() => deleteComment(comment.id)}
-                              className="text-[11.5px] transition-colors"
-                              style={{ color: "rgba(239,68,68,0.55)" }}
-                              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "#fca5a5"; }}
-                              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = "rgba(239,68,68,0.55)"; }}
-                            >
-                              Delete
-                            </button>
+                            <button onClick={() => deleteComment(comment.id)} style={{ background:"none", border:"none", cursor:"pointer", fontFamily:C.font, fontSize:"12px", color:"rgba(220,50,50,0.50)", fontWeight:600, padding:0 }}>Delete</button>
                           )}
                         </div>
                       </div>
                     </div>
 
-                    {/* Replies */}
                     {childReplies.length > 0 && (
-                      <div
-                        className="flex flex-col gap-2 ml-10 pl-3"
-                        style={{ borderLeft: "2px solid rgba(139,92,246,0.15)" }}
-                      >
+                      <div style={{ marginLeft:"45px", display:"flex", flexDirection:"column", gap:"8px" }}>
                         {childReplies.map((reply) => {
                           const rUser  = reply.user?.username ?? "User";
-                          const rImage = reply.user?.image ?? null;
+                          const rImage = reply.user?.image    ?? null;
                           return (
-                            <div key={reply.id} className="flex gap-2">
-                              <div
-                                className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-[11px] overflow-hidden"
-                                style={{
-                                  background: "linear-gradient(135deg,#6d28d9,#a855f7)",
-                                  border: "1.5px solid rgba(139,92,246,0.28)",
-                                }}
-                              >
-                                {rImage
-                                  ? <Image src={rImage} width={28} height={28} alt={rUser} className="w-full h-full object-cover" />
-                                  : rUser[0]?.toUpperCase()}
+                            <div key={reply.id} style={{ display:"flex", gap:"8px" }}>
+                              <div style={{ width:"28px", height:"28px", borderRadius:"50%", flexShrink:0, overflow:"hidden", display:"flex", alignItems:"center", justifyContent:"center", background:C.accentPale, color:C.accent, fontWeight:700, fontSize:"11px", fontFamily:C.font }}>
+                                {rImage ? <Image src={rImage} width={28} height={28} alt={rUser} style={{ width:"100%", height:"100%", objectFit:"cover" }} /> : rUser[0]?.toUpperCase()}
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <span
-                                  className="font-semibold text-[13px] mr-1.5"
-                                  style={{ fontFamily: "Syne, sans-serif", color: "#e9d5ff" }}
-                                >
-                                  {rUser}
-                                </span>
-                                <span
-                                  className="text-[12.5px] leading-relaxed"
-                                  style={{ color: "rgba(221,214,254,0.72)", fontFamily: "DM Sans, sans-serif" }}
-                                >
-                                  {reply.content}
-                                </span>
+                              <div style={{ background:C.pageBg, borderRadius:"4px 14px 14px 14px", padding:"8px 12px", flex:1 }}>
+                                <span style={{ fontFamily:C.fontSerif, fontSize:"13px", fontWeight:700, color:C.ink, marginRight:"5px" }}>{rUser}</span>
+                                <span style={{ fontFamily:C.font, fontSize:"13px", color:C.inkMid }}>{reply.content}</span>
                               </div>
                             </div>
                           );
@@ -476,47 +352,5 @@ export default function PostCard({ post }: { post: Post }) {
         </div>
       )}
     </>
-  );
-}
-
-/* ── Reusable action button ── */
-function ActionBtn({
-  children,
-  onClick,
-  active = false,
-  activeColor = "#a78bfa",
-  activeBorder = "rgba(167,139,250,0.30)",
-}: {
-  children: React.ReactNode;
-  onClick?: () => void;
-  active?: boolean;
-  activeColor?: string;
-  activeBorder?: string;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-[12.5px] font-medium transition-all duration-200 cursor-pointer"
-      style={{
-        border: active ? `1px solid ${activeBorder}` : "1px solid rgba(139,92,246,0.14)",
-        background: active ? `${activeColor}14` : "transparent",
-        color: active ? activeColor : "rgba(167,139,250,0.65)",
-        fontFamily: "DM Sans, sans-serif",
-      }}
-      onMouseEnter={(e) => {
-        if (active) return;
-        (e.currentTarget as HTMLButtonElement).style.background = "rgba(139,92,246,0.10)";
-        (e.currentTarget as HTMLButtonElement).style.color = "#c4b5fd";
-        (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(139,92,246,0.28)";
-      }}
-      onMouseLeave={(e) => {
-        if (active) return;
-        (e.currentTarget as HTMLButtonElement).style.background = "transparent";
-        (e.currentTarget as HTMLButtonElement).style.color = "rgba(167,139,250,0.65)";
-        (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(139,92,246,0.14)";
-      }}
-    >
-      {children}
-    </button>
   );
 }

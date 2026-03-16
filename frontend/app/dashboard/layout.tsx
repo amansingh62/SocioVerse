@@ -163,9 +163,9 @@ export default function DashboardLayout({
     return (
       <div className="flex items-center justify-center min-h-screen purple-mesh-bg">
         <div className="flex gap-2">
-         <span className="w-2.5 h-2.5 rounded-full bg-[#E056A4] dot-pulse" />
-<span className="w-2.5 h-2.5 rounded-full bg-[#E056A4] dot-pulse-2" />
-<span className="w-2.5 h-2.5 rounded-full bg-[#E056A4] dot-pulse-3" />
+          <span className="w-2.5 h-2.5 rounded-full bg-[#E056A4] dot-pulse" />
+          <span className="w-2.5 h-2.5 rounded-full bg-[#E056A4] dot-pulse-2" />
+          <span className="w-2.5 h-2.5 rounded-full bg-[#E056A4] dot-pulse-3" />
         </div>
       </div>
     );
@@ -230,32 +230,30 @@ ${pathname === href ? "bg-[#E056A4] text-[#fff]" : "text-[#000] hover:bg-[#E056A
             <p className="text-[11px] text-violet-900 mt-5 pl-1">v0.2.1</p>
           </div>
 
-<div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4">
+            <SupportChat />
 
-  <SupportChat />
-
-  <button
-    onClick={handleLogout}
-    className="
+            <button
+              onClick={handleLogout}
+              className="
       flex items-center gap-2 px-3.5 py-2.5 rounded-xl
       border border-[#E056A4]/40 text-[#E056A4]
       text-sm font-medium transition-all duration-200
       hover:bg-[#E056A4] hover:text-white
     "
-  >
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      className="w-4 h-4"
-    >
-      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
-    </svg>
-    Sign out
-  </button>
-
-</div>
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                className="w-4 h-4"
+              >
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
+              </svg>
+              Sign out
+            </button>
+          </div>
         </aside>
 
         <main

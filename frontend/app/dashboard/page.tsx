@@ -13,23 +13,24 @@ export default function Dashboard() {
 
       {/* Page header */}
       <div>
-        <h1 className="font-display text-[42px] font-light text-[#1c1917] leading-none tracking-tight">
+        <h1 className="font-display text-[42px] font-light text-[#E056A4] leading-none tracking-tight">
           Your Feed
         </h1>
-        <p className="text-[13px] text-[#a08070] mt-1.5">
+
+        <p className="text-[13px] text-[#E056A4]/70 mt-1.5">
           What&apos;s happening in your world
         </p>
       </div>
 
       {/* Feed Switcher */}
-      <div className="flex gap-2 bg-[rgba(201,150,122,0.08)] p-1 rounded-xl">
+      <div className="flex gap-2 bg-[#E056A4]/10 p-1 rounded-xl">
 
         <button
           onClick={() => setTab("feed")}
           className={`flex-1 py-2 rounded-lg text-sm font-medium transition ${
             tab === "feed"
-              ? "bg-white text-[#1c1917] shadow"
-              : "text-[#a08070]"
+              ? "bg-[#E056A4] text-white shadow"
+              : "text-[#E056A4]"
           }`}
         >
           Following
@@ -39,8 +40,8 @@ export default function Dashboard() {
           onClick={() => setTab("explore")}
           className={`flex-1 py-2 rounded-lg text-sm font-medium transition ${
             tab === "explore"
-              ? "bg-white text-[#1c1917] shadow"
-              : "text-[#a08070]"
+              ? "bg-[#E056A4] text-white shadow"
+              : "text-[#E056A4]"
           }`}
         >
           Explore
@@ -52,14 +53,15 @@ export default function Dashboard() {
       {tab === "feed" && <CreatePostModal />}
 
       {/* Divider */}
-      <div className="flex items-center gap-3 text-[11px] text-[#a08070] tracking-[0.08em] uppercase">
-        <span className="flex-1 h-px bg-[rgba(201,150,122,0.18)]" />
+      <div className="flex items-center gap-3 text-[11px] text-[#E056A4]/70 tracking-[0.08em] uppercase">
+        <span className="flex-1 h-px bg-[#E056A4]/30" />
         <span>{tab === "feed" ? "Recent posts" : "Explore posts"}</span>
-        <span className="flex-1 h-px bg-[rgba(201,150,122,0.18)]" />
+        <span className="flex-1 h-px bg-[#E056A4]/30" />
       </div>
 
       {/* Feed */}
       {tab === "feed" ? <FeedList /> : <ExploreFeedList />}
+
     </div>
   );
 }

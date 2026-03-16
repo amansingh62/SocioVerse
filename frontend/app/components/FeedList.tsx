@@ -44,7 +44,7 @@ export function FeedList() {
 
   if (posts.length === 0 && selectedTag) {
     return (
-      <div className="text-center py-10 text-violet-400 text-sm">
+      <div className="text-center py-10 text-[#E056A4] text-sm">
         No posts with #{selectedTag}
       </div>
     );
@@ -52,7 +52,6 @@ export function FeedList() {
 
   return (
     <div className="flex flex-col gap-4">
-
       {posts.map((post) =>
         post ? <PostCard key={post.id} post={post} /> : null
       )}
@@ -60,7 +59,7 @@ export function FeedList() {
       <div ref={bottomRef} />
 
       {loading && (
-        <div className="text-center py-6 text-violet-400">
+        <div className="text-center py-6 text-[#E056A4] text-sm">
           Loading...
         </div>
       )}
@@ -89,7 +88,7 @@ export function ExploreFeedList() {
 
   if (posts.length === 0 && selectedTag) {
     return (
-      <div className="text-center py-10 text-violet-400 text-sm">
+      <div className="text-center py-10 text-[#E056A4] text-sm">
         No explore posts with #{selectedTag}
       </div>
     );
