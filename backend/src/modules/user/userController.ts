@@ -273,3 +273,33 @@ const result = profiles.map((profile) => ({
 
   return res.json(result);
 };
+
+export const searchUsers = async (req: Request, res: Response) => {
+  try {
+    const q = req.query.q as string;
+
+    if (!q || q.trim() === "") {
+      return res.json([]);
+    }
+
+    const users = await prisma.user.findMany({
+      where: {
+        username: {
+          contains: q,
+          mode: "insensitive",
+        },
+      },
+      take: 10,
+      select: {
+        id: true,
+        username: true,
+        image: true,
+      },
+    });
+
+    res.json(users);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Search failed" });
+  }
+};
