@@ -67,3 +67,13 @@ export type HashTag = Prisma.HashTagModel
  * 
  */
 export type PostHashTag = Prisma.PostHashTagModel
+/**
+ * Model Conversation
+ * 
+ */
+export type Conversation = Prisma.ConversationModel
+/**
+ * Model Message
+ * 
+ */
+export type Message = Prisma.MessageModel
