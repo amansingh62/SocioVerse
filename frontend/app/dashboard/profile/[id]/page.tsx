@@ -55,6 +55,7 @@ export default function UserProfilePage() {
           border: "1px solid rgba(224,86,164,0.25)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
+          boxShadow: "0 4px 30px rgba(0,0,0,0.1)",
         }}
       >
 

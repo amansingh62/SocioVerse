@@ -80,6 +80,7 @@ export default function MyProfilePage() {
           border: "1px solid rgba(224,86,164,0.25)",
           backdropFilter: "blur(20px)",
           WebkitBackdropFilter: "blur(20px)",
+          boxShadow: "0 4px 30px rgba(0,0,0,0.1)",
         }}
       >
         <div className="flex items-start gap-6">
@@ -166,7 +167,6 @@ export default function MyProfilePage() {
         className="flex gap-1 p-1 rounded-2xl"
         style={{
           background: "rgba(224,86,164,0.08)",
-          border: "1px solid rgba(224,86,164,0.16)",
         }}
       >
         {(["posts", "saved"] as const).map((tab) => (

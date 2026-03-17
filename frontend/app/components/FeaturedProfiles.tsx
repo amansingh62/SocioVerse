@@ -63,6 +63,7 @@ export default function FeaturedProfiles() {
         backdropFilter: "blur(15px)",
         WebkitBackdropFilter: "blur(15px)",
         border: "1px solid rgba(248,220,234,0.3)",
+        boxShadow: "0 4px 30px rgba(0,0,0,0.1)",
       }}
     >
       {/* Header */}

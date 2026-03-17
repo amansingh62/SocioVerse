@@ -75,7 +75,7 @@ export default function CreatePostModal() {
       background:   C.card,
       borderRadius: "20px",
       border:       `1px solid ${C.border}`,
-      boxShadow:    "0 2px 16px rgba(233,30,140,0.07), 0 1px 3px rgba(0,0,0,0.04)",
+      boxShadow: "0 4px 30px rgba(0,0,0,0.1)",
       overflow:     "hidden",
     }}>
 
@@ -120,7 +120,7 @@ export default function CreatePostModal() {
             background:C.accent, border:"none", color:"#fff",
             cursor:"pointer", fontSize:"12px",
             display:"flex", alignItems:"center", justifyContent:"center",
-            boxShadow:"0 2px 8px rgba(233,30,140,0.30)",
+            boxShadow: "0 4px 30px rgba(0,0,0,0.1)",
           }}>✕</button>
         </div>
       )}
@@ -166,7 +166,7 @@ export default function CreatePostModal() {
               fontSize:"13px", fontWeight:700, fontFamily:C.font,
               cursor: canPost ? "pointer" : "not-allowed",
               letterSpacing:"0.02em",
-              boxShadow: canPost ? "0 4px 16px rgba(233,30,140,0.28)" : "none",
+              boxShadow: canPost ? "0 4px 30px rgba(0,0,0,0.1)": "none",
               transition:"background 0.2s, box-shadow 0.2s",
             }}
           >
