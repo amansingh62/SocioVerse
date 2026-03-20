@@ -2,7 +2,7 @@ import type { Request, Response } from "express"
 import { StatusCodes } from "../../constants/statusCodes.js";
 import { prisma } from "../../lib/prisma.js";
 
-export const conversation = async (req: Request, res: Response) => {
+export const conversationStart = async (req: Request, res: Response) => {
   const senderId = req.userId;
   const { receiverId } = req.body;
 
@@ -93,33 +93,55 @@ export const sendMessage = async (req: Request, res: Response) => {
 };
 
 export const getMessages = async (req: Request, res: Response) => {
-  const { conversationId } = req.params
+  const { conversationId } = req.params;
 
-  if(typeof conversationId !== "string") return res.status(StatusCodes.NOT_FOUND).json({ message: "User not found" });
+  if (typeof conversationId !== "string") {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "Invalid conversationId" });
+  }
 
   try {
-    const messages = await prisma.message.findMany({
-      where: {
-        conversationId
-      },
-      orderBy: {
-        createdAt: "asc"
-      },
+    const conversation = await prisma.conversation.findUnique({
+      where: { id: conversationId },
       include: {
-        sender: {
+        members: {
           select: {
             id: true,
             username: true,
-            image: true
-          }
-        }
-      }
-    })
+            image: true,
+          },
+        },
+        messages: {
+          orderBy: { createdAt: "asc" },
+          include: {
+            sender: {
+              select: {
+                id: true,
+                username: true,
+                image: true,
+              },
+            },
+          },
+        },
+      },
+    });
 
-    res.json(messages)
+    if (!conversation) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Conversation not found" });
+    }
+
+    return res.json({
+      participants: conversation.members,
+      messages: conversation.messages,
+    });
 
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch messages" })
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Failed to fetch messages" });
   }
 };
 
@@ -164,4 +186,48 @@ export const getUserConversations = async (req: Request, res: Response) => {
   })
 
   res.json(formatted)
+};
+
+export const deleteMessage = async (req: Request, res: Response) => {
+  const userId = req.userId;
+  const { messageId } = req.params as { messageId: string };
+
+  if (!userId) {
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ message: "Unauthorized" });
+  }
+
+  try {
+    const message = await prisma.message.findUnique({
+      where: { id: messageId },
+    });
+
+    if (!message) {
+      return res
+        .status(StatusCodes.NOT_FOUND)
+        .json({ message: "Message not found" });
+    }
+
+    if (message.senderId !== userId) {
+      return res
+        .status(StatusCodes.FORBIDDEN)
+        .json({ message: "Not allowed to delete this message" });
+    }
+
+    const updatedMessage = await prisma.message.update({
+      where: { id: messageId },
+      data: {
+        content: "This message was deleted",
+        isDeleted: true,
+      },
+    });
+
+    return res.status(StatusCodes.OK).json(updatedMessage);
+
+  } catch (error) {
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ message: "Failed to delete the message" });
+  }
 };

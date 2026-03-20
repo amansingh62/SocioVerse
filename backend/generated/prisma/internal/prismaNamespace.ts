@@ -1467,7 +1467,8 @@ export const MessageScalarFieldEnum = {
   conversationId: 'conversationId',
   senderId: 'senderId',
   content: 'content',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  isDeleted: 'isDeleted'
 } as const
 
 export type MessageScalarFieldEnum = (typeof MessageScalarFieldEnum)[keyof typeof MessageScalarFieldEnum]
@@ -1570,6 +1571,13 @@ export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'In
  * Reference to a field of type 'Int[]'
  */
 export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Boolean'
+ */
+export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
