@@ -91,28 +91,27 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     }),
 
   updateProfile: async (payload, userId) => {
-    try {
-      set({ loading: true });
+  try {
+    set({ loading: true });
 
-      const { data } = await api.patch("/user/profile", payload);
-      set((state) => ({
-        profilesById: {
-          ...state.profilesById,
-          [userId]: {
-            ...(state.profilesById[userId] || {}),
-            ...data,
-            bio: data.bio ?? state.profilesById[userId]?.bio,
-            name: data.name ?? state.profilesById[userId]?.name,
-          },
+    const { data } = await api.patch("/user/profile", payload);
+
+    set((state) => ({
+      profilesById: {
+        ...state.profilesById,
+        [userId]: {
+          ...state.profilesById[userId],
+          ...data,
         },
-      }));
-    } catch (err) {
-      console.error(err);
-      throw err;
-    } finally {
-      set({ loading: false });
-    }
-  },
+      },
+    }));
+  } catch (err) {
+    console.error(err);
+    throw err;
+  } finally {
+    set({ loading: false });
+  }
+},
 
   toggleFollow: async (targetUserId, currentUserId) => {
     if (targetUserId === currentUserId) return;

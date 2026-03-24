@@ -73,11 +73,7 @@ export default function EditProfileModal({
     setError("");
 
     try {
-      await updateProfile({
-        username,
-        bio,
-        image,
-      });
+      await updateProfile({ username, bio, image }, profile.id);
 
       onClose();
     } catch {
