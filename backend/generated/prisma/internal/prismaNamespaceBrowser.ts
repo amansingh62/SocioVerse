@@ -62,7 +62,11 @@ export const ModelName = {
   HashTag: 'HashTag',
   PostHashTag: 'PostHashTag',
   Conversation: 'Conversation',
-  Message: 'Message'
+  ConversationMember: 'ConversationMember',
+  Message: 'Message',
+  Channel: 'Channel',
+  ChannelMember: 'ChannelMember',
+  ChannelMessage: 'ChannelMessage'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -194,6 +198,7 @@ export type PostHashTagScalarFieldEnum = (typeof PostHashTagScalarFieldEnum)[key
 export const ConversationScalarFieldEnum = {
   id: 'id',
   lastMessage: 'lastMessage',
+  lastMessageAt: 'lastMessageAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -201,16 +206,61 @@ export const ConversationScalarFieldEnum = {
 export type ConversationScalarFieldEnum = (typeof ConversationScalarFieldEnum)[keyof typeof ConversationScalarFieldEnum]
 
 
+export const ConversationMemberScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  conversationId: 'conversationId'
+} as const
+
+export type ConversationMemberScalarFieldEnum = (typeof ConversationMemberScalarFieldEnum)[keyof typeof ConversationMemberScalarFieldEnum]
+
+
 export const MessageScalarFieldEnum = {
   id: 'id',
   conversationId: 'conversationId',
   senderId: 'senderId',
   content: 'content',
-  createdAt: 'createdAt',
-  isDeleted: 'isDeleted'
+  isDeleted: 'isDeleted',
+  createdAt: 'createdAt'
 } as const
 
 export type MessageScalarFieldEnum = (typeof MessageScalarFieldEnum)[keyof typeof MessageScalarFieldEnum]
+
+
+export const ChannelScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  description: 'description',
+  isPublic: 'isPublic',
+  creatorId: 'creatorId',
+  lastMessageAt: 'lastMessageAt',
+  createdAt: 'createdAt'
+} as const
+
+export type ChannelScalarFieldEnum = (typeof ChannelScalarFieldEnum)[keyof typeof ChannelScalarFieldEnum]
+
+
+export const ChannelMemberScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  channelId: 'channelId',
+  role: 'role'
+} as const
+
+export type ChannelMemberScalarFieldEnum = (typeof ChannelMemberScalarFieldEnum)[keyof typeof ChannelMemberScalarFieldEnum]
+
+
+export const ChannelMessageScalarFieldEnum = {
+  id: 'id',
+  content: 'content',
+  senderId: 'senderId',
+  channelId: 'channelId',
+  isDeleted: 'isDeleted',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ChannelMessageScalarFieldEnum = (typeof ChannelMessageScalarFieldEnum)[keyof typeof ChannelMessageScalarFieldEnum]
 
 
 export const SortOrder = {

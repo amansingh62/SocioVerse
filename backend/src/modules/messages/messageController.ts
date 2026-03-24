@@ -6,69 +6,99 @@ export const conversationStart = async (req: Request, res: Response) => {
   const senderId = req.userId;
   const { receiverId } = req.body;
 
-  if(!senderId || !receiverId) {
-    return res.json(StatusCodes.NOT_FOUND).json({ message: "Invalid users" });
-  };
+  if (!senderId || !receiverId) {
+    return res.status(StatusCodes.NOT_FOUND).json({ message: "Invalid users" });
+  }
 
-  if(senderId == receiverId) return res.status(StatusCodes.BAD_REQUEST).json({ message: "Can't message yourself" });
+  if (senderId === receiverId) {
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .json({ message: "Can't message yourself" });
+  }
 
-  const conversation = await prisma.conversation.findFirst({
+  const existingConversation = await prisma.conversation.findFirst({
     where: {
-        AND: [
-            { members: { some: { id: senderId } } },
-            { members: { some: { id: receiverId } } },
-        ]
+      AND: [
+        {
+          members: {
+            some: { userId: senderId }
+          }
+        },
+        {
+          members: {
+            some: { userId: receiverId }
+          }
+        }
+      ]
     },
     include: {
-        members: {
+      members: {
+        include: {
+          user: {
             select: { id: true, username: true, image: true }
+          }
         }
+      }
     }
   });
 
-  if(conversation) {
-    return res.json(conversation);
-  };
+  if (existingConversation) {
+    return res.json(existingConversation);
+  }
 
   const newConversation = await prisma.conversation.create({
-    data: {
-        members: {
-            connect: [{ id: senderId }, { id: receiverId, }]
-        }
-    },
+    data: {}
+  });
 
+  await prisma.conversationMember.createMany({
+    data: [
+      { userId: senderId, conversationId: newConversation.id },
+      { userId: receiverId, conversationId: newConversation.id }
+    ]
+  });
+
+  const fullConversation = await prisma.conversation.findUnique({
+    where: { id: newConversation.id },
     include: {
-        members: {
+      members: {
+        include: {
+          user: {
             select: { id: true, username: true, image: true }
+          }
         }
+      }
     }
   });
 
-  res.json(newConversation);
+  return res.json(fullConversation);
 };
 
 export const sendMessage = async (req: Request, res: Response) => {
-  const senderId = req.userId
-  const { conversationId, content } = req.body
+  const senderId = req.userId;
+  const { conversationId, content } = req.body;
 
   if (!senderId || !conversationId || !content) {
-    return res.status(400).json({ message: "Missing fields" })
+    return res.status(400).json({ message: "Missing fields" });
   }
 
   try {
+    const isMember = await prisma.conversationMember.findFirst({
+      where: {
+        conversationId,
+        userId: senderId
+      }
+    });
+
+    if (!isMember) {
+      return res.status(403).json({ message: "Not allowed" });
+    }
+
     const message = await prisma.message.create({
       data: {
         content,
-
-        conversation: {
-          connect: { id: conversationId }
-        },
-
-        sender: {
-          connect: { id: senderId }
-        }
+        senderId,
+        conversationId
       },
-
       include: {
         sender: {
           select: {
@@ -78,17 +108,21 @@ export const sendMessage = async (req: Request, res: Response) => {
           }
         }
       }
-    })
+    });
 
     await prisma.conversation.update({
       where: { id: conversationId },
-      data: { updatedAt: new Date() }
-    })
+      data: {
+        updatedAt: new Date(),
+        lastMessage: content,
+        lastMessageAt: new Date()
+      }
+    });
 
-    res.json(message)
+    return res.json(message);
 
   } catch (error) {
-    res.status(500).json({ message: "Failed to send message" })
+    return res.status(500).json({ message: "Failed to send message" });
   }
 };
 

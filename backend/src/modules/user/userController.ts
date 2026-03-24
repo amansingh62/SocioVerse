@@ -53,7 +53,7 @@ export const getUserProfile = async (req: Request, res: Response) => {
       },
     });
 
-    isFollowing = !!existing;
+    isFollowing = existing ? true : false;
   }
 
   return res.status(StatusCodes.OK).json({
@@ -199,6 +199,7 @@ export const getUserPosts = async (req: Request, res: Response) => {
         orderBy: {
           createdAt: "desc"
         },
+        
         include: {
           user: {
             select: {
@@ -267,7 +268,10 @@ export const getFeaturedProfile = async (req: Request, res: Response) => {
  const followingSet = new Set(following.map((f) => f.followingId));
 
 const result = profiles.map((profile) => ({
-  ...profile,
+  id: profile.id,
+  username: profile.username,
+  image: profile.image,
+  followersCount: profile._count.followers,  
   isFollowing: followingSet.has(profile.id),
 }));
 

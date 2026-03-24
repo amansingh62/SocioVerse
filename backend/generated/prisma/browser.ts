@@ -73,7 +73,27 @@ export type PostHashTag = Prisma.PostHashTagModel
  */
 export type Conversation = Prisma.ConversationModel
 /**
+ * Model ConversationMember
+ * 
+ */
+export type ConversationMember = Prisma.ConversationMemberModel
+/**
  * Model Message
  * 
  */
 export type Message = Prisma.MessageModel
+/**
+ * Model Channel
+ * 
+ */
+export type Channel = Prisma.ChannelModel
+/**
+ * Model ChannelMember
+ * 
+ */
+export type ChannelMember = Prisma.ChannelMemberModel
+/**
+ * Model ChannelMessage
+ * 
+ */
+export type ChannelMessage = Prisma.ChannelMessageModel
