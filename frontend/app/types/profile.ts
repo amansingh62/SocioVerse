@@ -1,12 +1,14 @@
 export interface Profile {
-    id: string;
-    name: string;
-    username: string;
-    email: string;
-    bio?: string;
-    image?: string;
-    createdAt: string;
-    followersCount: number;
-    followingCount: number;
-    isFollowing: boolean;
-};
+  id: string;
+  username: string;
+
+  name?: string;
+  email?: string;
+  bio?: string;
+  image?: string | null;
+  createdAt?: string;
+
+  followersCount: number;
+  followingCount: number;
+  isFollowing: boolean;
+}

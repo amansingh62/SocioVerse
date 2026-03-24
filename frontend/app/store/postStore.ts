@@ -26,7 +26,7 @@ interface PostState {
   postsById: Record<string, Post>;
 
   feedIds: string[];
-  profileIds: string[];
+  profilePostIdsByUser: Record<string, string[]>;
   savedIds: string[];
   exploreIds: string[];
 
@@ -37,6 +37,12 @@ interface PostState {
   fetchFeed: () => Promise<void>;
   fetchExploreFeed: () => Promise<void>;
   loadMore: () => Promise<void>;
+
+  getProfilePostIds: (userId: string) => string[];
+  getProfilePosts: (userId: string) => Post[];
+
+  ensureProfilePosts: (userId: string) => Promise<void>;
+  ensureSavedPosts: () => Promise<void>;
 
   fetchProfilePosts: (userId: string) => Promise<void>;
   fetchAllComments: (postId: string) => Promise<void>;
@@ -63,7 +69,7 @@ export const usePostStore = create<PostState>((set, get) => ({
   postsById: {},
 
   feedIds: [],
-  profileIds: [],
+  profilePostIdsByUser: {},
   savedIds: [],
   exploreIds: [],
 
@@ -142,6 +148,36 @@ export const usePostStore = create<PostState>((set, get) => ({
     }
   },
 
+  getProfilePostIds: (userId) => {
+  const state = get();
+  return state.profilePostIdsByUser[userId] || [];
+},
+
+getProfilePosts: (userId) => {
+  const state = get();
+  const ids = state.profilePostIdsByUser[userId] || [];
+
+  return ids
+    .map((id) => state.postsById[id])
+    .filter(Boolean);
+},
+
+ensureProfilePosts: async (userId: string) => {
+  const state = get();
+
+  if (!state.profilePostIdsByUser[userId]) {
+    await state.fetchProfilePosts(userId);
+  }
+},
+
+ensureSavedPosts: async () => {
+  const state = get();
+
+  if (state.savedIds.length === 0) {
+    await state.fetchSavedPosts();
+  }
+},
+
   fetchProfilePosts: async (userId) => {
     const { data } = await api.get(`/user/${userId}/posts`);
 
@@ -155,7 +191,10 @@ export const usePostStore = create<PostState>((set, get) => ({
 
     set((state) => ({
       postsById: { ...state.postsById, ...map },
-      profileIds: unique(ids),
+      profilePostIdsByUser: {
+        ...state.profilePostIdsByUser,
+        [userId]: unique(ids),
+      },
     }));
   },
 
@@ -277,7 +316,7 @@ export const usePostStore = create<PostState>((set, get) => ({
     });
   },
 
-  deletePost: async (postId) => {
+ deletePost: async (postId) => {
     await api.delete(`/post/${postId}`);
 
     set((state) => {
@@ -286,9 +325,18 @@ export const usePostStore = create<PostState>((set, get) => ({
 
       return {
         postsById: map,
+
         feedIds: state.feedIds.filter((id) => id !== postId),
-        profileIds: state.profileIds.filter((id) => id !== postId),
         savedIds: state.savedIds.filter((id) => id !== postId),
+
+        profilePostIdsByUser: Object.fromEntries(
+          Object.entries(state.profilePostIdsByUser).map(
+            ([userId, ids]) => [
+              userId,
+              ids.filter((id) => id !== postId),
+            ]
+          )
+        ),
       };
     });
   },

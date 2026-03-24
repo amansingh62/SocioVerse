@@ -13,25 +13,32 @@ export default function UserProfilePage() {
   const { id } = useParams();
   const router = useRouter();
 
-  const profile = useProfileStore((s) => s.profile);
+  const userId = id as string;
+
+  const profile = useProfileStore((s) =>
+    userId ? s.profilesById[userId] : undefined
+  );
+  const ensureProfile = useProfileStore((s) => s.ensureProfile);
   const loading = useProfileStore((s) => s.loading);
-  const fetchProfile = useProfileStore((s) => s.fetchProfile);
 
+  const profilePostIds = usePostStore((s) =>
+    userId ? s.profilePostIdsByUser[userId] : undefined
+  );
   const postsById = usePostStore((s) => s.postsById);
-  const profileIds = usePostStore((s) => s.profileIds);
-  const fetchProfilePosts = usePostStore((s) => s.fetchProfilePosts);
 
-  const posts = profileIds.map((pid) => postsById[pid]).filter(Boolean);
+  const ensureProfilePosts = usePostStore((s) => s.ensureProfilePosts);
+
+  const posts = (profilePostIds ?? [])
+    .map((id) => postsById[id])
+    .filter(Boolean);
 
   useEffect(() => {
-    if (!id) return;
+    if (!userId) return;
 
-    fetchProfile(id as string);
+    ensureProfile(userId);
+    ensureProfilePosts(userId);
 
-    if (profileIds.length === 0) {
-      fetchProfilePosts(id as string);
-    }
-  }, [id]);
+  }, [userId, ensureProfile, ensureProfilePosts]);
 
   const handleMessage = async () => {
     if (!profile) return;

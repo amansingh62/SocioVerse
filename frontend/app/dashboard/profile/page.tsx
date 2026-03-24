@@ -10,49 +10,42 @@ import EditProfileModal from "@/app/components/EditProfileModal";
 
 export default function MyProfilePage() {
 
-  const profile = useProfileStore((s) => s.profile);
-  const fetchProfile = useProfileStore((s) => s.fetchProfile);
-
   const user = useAuthStore((s) => s.user);
 
-  const postsById = usePostStore((s) => s.postsById);
-  const profileIds = usePostStore((s) => s.profileIds);
+  const profile = useProfileStore((s) =>
+    user ? s.profilesById[user.id] : undefined
+  );
+
+  const ensureProfile = useProfileStore((s) => s.ensureProfile);
+  const ensureProfilePosts = usePostStore((s) => s.ensureProfilePosts);
+  const ensureSavedPosts = usePostStore((s) => s.ensureSavedPosts);
+
+  const profilePostIds = usePostStore((s) =>
+    user ? s.profilePostIdsByUser[user.id] : undefined
+  );
+
   const savedIds = usePostStore((s) => s.savedIds);
-
-  const fetchProfilePosts = usePostStore((s) => s.fetchProfilePosts);
-  const fetchSavedPosts = usePostStore((s) => s.fetchSavedPosts);
-
+  const postsById = usePostStore((s) => s.postsById);
 
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"posts" | "saved">("posts");
 
-  const myPosts = profileIds.map((id) => postsById[id]).filter(Boolean);
-  const savedPosts = savedIds.map((id) => postsById[id]).filter(Boolean);
+  const myPosts = (profilePostIds ?? [])
+    .map((id) => postsById[id])
+    .filter(Boolean);
 
+  const savedPosts = savedIds
+    .map((id) => postsById[id])
+    .filter(Boolean);
 
   useEffect(() => {
     if (!user) return;
 
-    if (!profile) {
-      fetchProfile(user.id);
-    }
+    ensureProfile(user.id);
+    ensureProfilePosts(user.id);
+    ensureSavedPosts();
 
-    if (profileIds.length === 0) {
-      fetchProfilePosts(user.id);
-    }
-
-    if (savedIds.length === 0) {
-      fetchSavedPosts();
-    }
-  }, [
-    user,
-    profile,
-    profileIds.length,
-    savedIds.length,
-    fetchProfile,
-    fetchProfilePosts,
-    fetchSavedPosts,
-  ]);
+  }, [user, ensureProfile, ensureProfilePosts, ensureSavedPosts]);
 
 
   if (!profile) {

@@ -4,56 +4,48 @@ import Image from "next/image";
 import Link from "next/link";
 import api from "../lib/axios";
 import { useEffect, useState } from "react";
-
-interface Profile {
-  id: string;
-  username: string;
-  _count: {
-    followers: number;
-  };
-  image: string | null;
-  isFollowing: boolean;
-}
+import { useProfileStore } from "../store/profileStore";
+import { useAuthStore } from "../store/authStore";
 
 export default function FeaturedProfiles() {
-  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const featuredIds = useProfileStore((s) => s.featuredIds);
+  const profilesById = useProfileStore((s) => s.profilesById);
+  const setFeaturedProfiles = useProfileStore((s) => s.setFeaturedProfiles);
+  const toggleFollow = useProfileStore((s) => s.toggleFollow);
+  const currentUser = useAuthStore((s) => s.user);
 
-  const toggleFollow = async (id: string, isFollowing: boolean) => {
-    try {
-      if (isFollowing) {
-        await api.delete(`/follow/${id}`);
-      } else {
-        await api.post(`/follow/${id}`);
-      }
-
-      setProfiles((prev) =>
-        prev.map((p) =>
-          p.id === id
-            ? {
-                ...p,
-                isFollowing: !p.isFollowing,
-                _count: {
-                  followers: p.isFollowing
-                    ? p._count.followers - 1
-                    : p._count.followers + 1,
-                },
-              }
-            : p
-        )
-      );
-    } catch (err) {
-      console.error(err);
-    }
-  };
+  const [loadingId, setLoadingId] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      const { data } = await api.get("/user/profiles");
-      setProfiles(data);
+    const fetchProfiles = async () => {
+      try {
+        const { data } = await api.get("/user/profiles");
+        setFeaturedProfiles(data);
+      } catch (err) {
+        console.error("Failed to fetch profiles:", err);
+      }
     };
 
-    fetchProfile();
-  }, []);
+    fetchProfiles();
+  }, [setFeaturedProfiles]);
+
+  const profiles = featuredIds
+    .map((id) => profilesById[id])
+    .filter(Boolean) 
+
+  const handleToggle = async (id: string) => {
+    if (!currentUser || loadingId === id) return;
+
+    setLoadingId(id);
+
+    try {
+      await toggleFollow(id, currentUser.id);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingId(null);
+    }
+  };
 
   return (
     <div
@@ -66,7 +58,6 @@ export default function FeaturedProfiles() {
         boxShadow: "0 4px 30px rgba(0,0,0,0.1)",
       }}
     >
-      {/* Header */}
       <div className="px-4 pt-4 pb-3 flex items-center gap-2.5">
         <span
           className="w-7 h-7 rounded-lg flex items-center justify-center text-[13px] text-white"
@@ -86,7 +77,6 @@ export default function FeaturedProfiles() {
         </div>
       </div>
 
-      {/* Divider */}
       <div
         style={{
           height: 1,
@@ -95,7 +85,6 @@ export default function FeaturedProfiles() {
         }}
       />
 
-      {/* Profiles */}
       <div className="flex flex-col py-2">
         {profiles.map((profile, index) => (
           <Link
@@ -113,7 +102,6 @@ export default function FeaturedProfiles() {
               e.currentTarget.style.color = "black";
             }}
           >
-            {/* Rank */}
             <span
               className="text-[11px] font-bold w-4 text-center"
               style={{
@@ -123,7 +111,6 @@ export default function FeaturedProfiles() {
               {index + 1}
             </span>
 
-            {/* Avatar */}
             <div
               className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-[14px]"
               style={{
@@ -144,7 +131,6 @@ export default function FeaturedProfiles() {
               )}
             </div>
 
-            {/* Name */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1">
                 <p className="text-[13px] font-semibold truncate text-black">
@@ -170,15 +156,14 @@ export default function FeaturedProfiles() {
               </div>
 
               <p className="text-[11px] text-gray-600 mt-0.5">
-                {profile._count.followers} followers
+                {profile.followersCount} followers
               </p>
             </div>
 
-            {/* Follow button */}
             <button
               onClick={(e) => {
                 e.preventDefault();
-                toggleFollow(profile.id, profile.isFollowing);
+                handleToggle(profile.id);
               }}
               className="text-xs font-semibold px-2 py-1 rounded-md"
               style={{
