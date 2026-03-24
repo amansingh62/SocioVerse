@@ -1,4 +1,4 @@
-import type { Request, Response } from "express"
+import type { Request, Response } from "express";
 import { StatusCodes } from "../../constants/statusCodes.js";
 import { prisma } from "../../lib/prisma.js";
 
@@ -21,25 +21,25 @@ export const conversationStart = async (req: Request, res: Response) => {
       AND: [
         {
           members: {
-            some: { userId: senderId }
-          }
+            some: { userId: senderId },
+          },
         },
         {
           members: {
-            some: { userId: receiverId }
-          }
-        }
-      ]
+            some: { userId: receiverId },
+          },
+        },
+      ],
     },
     include: {
       members: {
         include: {
           user: {
-            select: { id: true, username: true, image: true }
-          }
-        }
-      }
-    }
+            select: { id: true, username: true, image: true },
+          },
+        },
+      },
+    },
   });
 
   if (existingConversation) {
@@ -47,14 +47,14 @@ export const conversationStart = async (req: Request, res: Response) => {
   }
 
   const newConversation = await prisma.conversation.create({
-    data: {}
+    data: {},
   });
 
   await prisma.conversationMember.createMany({
     data: [
       { userId: senderId, conversationId: newConversation.id },
-      { userId: receiverId, conversationId: newConversation.id }
-    ]
+      { userId: receiverId, conversationId: newConversation.id },
+    ],
   });
 
   const fullConversation = await prisma.conversation.findUnique({
@@ -63,11 +63,11 @@ export const conversationStart = async (req: Request, res: Response) => {
       members: {
         include: {
           user: {
-            select: { id: true, username: true, image: true }
-          }
-        }
-      }
-    }
+            select: { id: true, username: true, image: true },
+          },
+        },
+      },
+    },
   });
 
   return res.json(fullConversation);
@@ -85,8 +85,8 @@ export const sendMessage = async (req: Request, res: Response) => {
     const isMember = await prisma.conversationMember.findFirst({
       where: {
         conversationId,
-        userId: senderId
-      }
+        userId: senderId,
+      },
     });
 
     if (!isMember) {
@@ -97,17 +97,17 @@ export const sendMessage = async (req: Request, res: Response) => {
       data: {
         content,
         senderId,
-        conversationId
+        conversationId,
       },
       include: {
         sender: {
           select: {
             id: true,
             username: true,
-            image: true
-          }
-        }
-      }
+            image: true,
+          },
+        },
+      },
     });
 
     await prisma.conversation.update({
@@ -115,12 +115,11 @@ export const sendMessage = async (req: Request, res: Response) => {
       data: {
         updatedAt: new Date(),
         lastMessage: content,
-        lastMessageAt: new Date()
-      }
+        lastMessageAt: new Date(),
+      },
     });
 
     return res.json(message);
-
   } catch (error) {
     return res.status(500).json({ message: "Failed to send message" });
   }
@@ -140,10 +139,14 @@ export const getMessages = async (req: Request, res: Response) => {
       where: { id: conversationId },
       include: {
         members: {
-          select: {
-            id: true,
-            username: true,
-            image: true,
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                image: true,
+              },
+            },
           },
         },
         messages: {
@@ -171,7 +174,6 @@ export const getMessages = async (req: Request, res: Response) => {
       participants: conversation.members,
       messages: conversation.messages,
     });
-
   } catch (error) {
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
@@ -180,46 +182,50 @@ export const getMessages = async (req: Request, res: Response) => {
 };
 
 export const getUserConversations = async (req: Request, res: Response) => {
-  const userId = req.userId!
+  const userId = req.userId!;
 
   const conversations = await prisma.conversation.findMany({
     where: {
       members: {
-        some: { id: userId }
-      }
+        some: { userId: userId },
+      },
     },
 
     include: {
       members: {
-        select: {
-          id: true,
-          username: true,
-          image: true
-        }
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              image: true,
+            },
+          },
+        },
       },
 
       messages: {
         take: 1,
-        orderBy: { createdAt: "desc" }
-      }
+        orderBy: { createdAt: "desc" },
+      },
     },
 
     orderBy: {
-      updatedAt: "desc"
-    }
-  })
+      updatedAt: "desc",
+    },
+  });
 
   const formatted = conversations.map((conv) => {
-    const otherUser = conv.members.find((m) => m.id !== userId)
+    const otherUser = conv.members.find((m) => m.user.id !== userId)?.user;
 
     return {
       conversationId: conv.id,
       user: otherUser,
-      lastMessage: conv.messages[0] ?? null
-    }
-  })
+      lastMessage: conv.messages[0] ?? null,
+    };
+  });
 
-  res.json(formatted)
+  res.json(formatted);
 };
 
 export const deleteMessage = async (req: Request, res: Response) => {
@@ -258,7 +264,6 @@ export const deleteMessage = async (req: Request, res: Response) => {
     });
 
     return res.status(StatusCodes.OK).json(updatedMessage);
-
   } catch (error) {
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
