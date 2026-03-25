@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import CreatePostModal from "../components/CreatePostModal";
-import FeedList from "../components/FeedList";
-import ExploreFeedList from "../components/ExploreFeedList";
+import FeedList, { ExploreFeedList } from "../components/FeedList";
 
 export default function Dashboard() {
   const [tab, setTab] = useState<"feed" | "explore">("feed");

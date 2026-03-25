@@ -56,7 +56,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     }
   },
 
-  ensureProfile: async (id: string) => {
+  ensureProfile: async (id) => {
     const state = get();
     const existing = state.profilesById[id];
 
