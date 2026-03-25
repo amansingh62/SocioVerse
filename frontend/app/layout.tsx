@@ -5,6 +5,9 @@ import SocketListener from "./components/SocketListener";
 export const metadata: Metadata = {
   title: "Socioverse",
   description: "A beautiful social media experience",
+  icons: {
+    icon: "/socio.svg.png",
+  },
 };
 
 export default function RootLayout({

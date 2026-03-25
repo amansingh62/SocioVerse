@@ -8,6 +8,7 @@ import { usePostStore } from "@/app/store/postStore";
 import PostCard from "@/app/components/PostCard";
 import Image from "next/image";
 import api from "@/app/lib/axios";
+import { ProfilePageSkeleton } from "@/app/components/skeleton/ProfilePageSkeleton";
 
 export default function UserProfilePage() {
   const { id } = useParams();
@@ -56,13 +57,7 @@ export default function UserProfilePage() {
 
   if (loading && !profile) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="flex gap-2">
-          <span className="w-2 h-2 rounded-full bg-[#E056A4] dot-pulse" />
-          <span className="w-2 h-2 rounded-full bg-[#E056A4] dot-pulse-2" />
-          <span className="w-2 h-2 rounded-full bg-[#E056A4] dot-pulse-3" />
-        </div>
-      </div>
+     <ProfilePageSkeleton />
     );
   }
 

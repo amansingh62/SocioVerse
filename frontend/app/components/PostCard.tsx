@@ -22,10 +22,8 @@ const C = {
   fontSerif:  "'DM Serif Display', Georgia, serif",
 };
 
-// Avatar size + gap = indent for content/actions
-const AVATAR   = 46; // px
-const GAP      = 13; // px
-const INDENT   = AVATAR + GAP; // 59px — but we shave a little: use 52
+const AVATAR   = 46; 
+const GAP      = 13; 
 
 export default function PostCard({ post }: { post: Post }) {
   const { user } = useAuthStore();

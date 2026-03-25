@@ -8,10 +8,8 @@ export default function Page() {
   return (
     <div className="min-h-screen relative overflow-hidden flex flex-col">
 
-      {/* Ambient blobs */}
       <div className="bg-blob-1" />
       <div className="bg-blob-2" />
-      {/* Extra decorative blob */}
       <div
         className="fixed pointer-events-none z-0"
         style={{
@@ -21,7 +19,6 @@ export default function Page() {
         }}
       />
 
-      {/* ── Nav ── */}
       <nav className="relative z-10 flex items-center justify-between px-10 py-6">
         <div className="flex items-center gap-2.5">
           <span className="text-[#c9967a] text-xl">✦</span>
@@ -45,16 +42,13 @@ export default function Page() {
         </div>
       </nav>
 
-      {/* ── Hero ── */}
       <section className="relative z-10 flex-1 flex flex-col items-center justify-center text-center px-6 pt-10 pb-24 gap-8">
 
-        {/* Badge */}
         <div className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-[rgba(201,150,122,0.25)] bg-[rgba(201,150,122,0.07)] text-[12px] text-[#a0614a] font-medium tracking-wide">
           <span className="w-1.5 h-1.5 rounded-full bg-[#c9967a] animate-pulse" />
           Beautiful. Personal. Yours.
         </div>
 
-        {/* Headline */}
         <div className="flex flex-col items-center gap-3 max-w-3xl">
           <h1 className="font-display text-[64px] md:text-[80px] font-light text-[#1c1917] leading-[1.05] tracking-tight">
             A space to share
@@ -77,7 +71,6 @@ export default function Page() {
           </p>
         </div>
 
-        {/* CTA buttons */}
         <div className="flex items-center gap-4 flex-wrap justify-center">
           <button
             onClick={() => router.push("/register")}
@@ -96,7 +89,6 @@ export default function Page() {
           </button>
         </div>
 
-        {/* Social proof */}
         <div className="flex items-center gap-2 text-[12.5px] text-[#a08070]">
           <div className="flex -space-x-2">
             {["#e8c4a0", "#c9967a", "#a0614a", "#d4b090", "#b87a5a"].map((c, i) => (
@@ -112,7 +104,6 @@ export default function Page() {
           <span>Join <strong className="text-[#5a4a40]">2,400+</strong> people already sharing</span>
         </div>
 
-        {/* ── Feature cards ── */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-3xl w-full mt-6">
           {[
             {
@@ -163,7 +154,6 @@ export default function Page() {
         </div>
       </section>
 
-      {/* ── Footer ── */}
       <footer className="relative z-10 text-center py-6 text-[12px] text-[#b0a090] border-t border-[rgba(201,150,122,0.10)]">
         <span className="text-[#c9967a] mr-1">✦</span>
         Socioverse · Made with care · {new Date().getFullYear()}

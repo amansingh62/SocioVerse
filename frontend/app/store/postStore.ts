@@ -32,11 +32,14 @@ interface PostState {
 
   nextCursor: string | null;
   loading: boolean;
+  loadingFeed: boolean;
+  loadingExplore: boolean;
   selectedTag: string | null;
 
   fetchFeed: () => Promise<void>;
   fetchExploreFeed: () => Promise<void>;
   loadMore: () => Promise<void>;
+  
 
   getProfilePostIds: (userId: string) => string[];
   getProfilePosts: (userId: string) => Post[];
@@ -75,11 +78,16 @@ export const usePostStore = create<PostState>((set, get) => ({
 
   nextCursor: null,
   loading: false,
+loadingFeed: false,
+loadingExplore: false,
   selectedTag: null,
 
   setSelectedTag: (tag) => set({ selectedTag: tag }),
 
   fetchFeed: async () => {
+  set({ loadingFeed: true });
+
+  try {
     const { data } = await api.get("/post/feed");
 
     const map: Record<string, Post> = {};
@@ -94,10 +102,18 @@ export const usePostStore = create<PostState>((set, get) => ({
       postsById: { ...state.postsById, ...map },
       feedIds: unique(ids),
       nextCursor: data.nextCursor,
+      loadingFeed: false,
     }));
-  },
+  } catch (err) {
+    console.error(err);
+    set({ loadingFeed: false });
+  }
+},
 
-  fetchExploreFeed: async () => {
+ fetchExploreFeed: async () => {
+  set({ loadingExplore: true });
+
+  try {
     const { data } = await api.get("/post/explore");
 
     const map: Record<string, Post> = {};
@@ -112,8 +128,13 @@ export const usePostStore = create<PostState>((set, get) => ({
       postsById: { ...state.postsById, ...map },
       exploreIds: unique(ids),
       nextCursor: data.nextCursor,
+      loadingExplore: false,
     }));
-  },
+  } catch (err) {
+    console.error(err);
+    set({ loadingExplore: false });
+  }
+},
 
   loadMore: async () => {
     const { nextCursor, loading } = get();

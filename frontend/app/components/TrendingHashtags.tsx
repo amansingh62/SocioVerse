@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import api from "../lib/axios";
 import { usePostStore } from "../store/postStore";
 import { getSocket } from "../lib/socket";
+import { TrendingHashtagsSkeleton } from "./skeleton/TrendingHashtags";
 
 interface Hashtag {
   tag: string;
@@ -16,12 +17,20 @@ export default function TrendingHashtags() {
 
   const [hashtags, setHashtags] = useState<Hashtag[]>([]);
   const [hovered, setHovered] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const load = async () => {
-      const { data } = await api.get("/post/hashtags/trending");
-      setHashtags(data);
-    };
+  try {
+    setLoading(true);
+    const { data } = await api.get("/post/hashtags/trending");
+    setHashtags(data);
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
 
     load();
 
@@ -36,6 +45,10 @@ export default function TrendingHashtags() {
       socket.off("hashtags:updated");
     };
   }, []);
+
+  if (loading && hashtags.length === 0) {
+  return <TrendingHashtagsSkeleton />;
+}
 
   return (
     <div

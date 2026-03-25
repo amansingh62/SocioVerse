@@ -6,6 +6,7 @@ import api from "../lib/axios";
 import { useEffect, useState } from "react";
 import { useProfileStore } from "../store/profileStore";
 import { useAuthStore } from "../store/authStore";
+import FeaturedProfilesSkeleton from "./skeleton/FeaturedProfileSkeleton";
 
 export default function FeaturedProfiles() {
   const featuredIds = useProfileStore((s) => s.featuredIds);
@@ -15,19 +16,23 @@ export default function FeaturedProfiles() {
   const currentUser = useAuthStore((s) => s.user);
 
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchProfiles = async () => {
-      try {
-        const { data } = await api.get("/user/profiles");
-        setFeaturedProfiles(data);
-      } catch (err) {
-        console.error("Failed to fetch profiles:", err);
-      }
-    };
+ useEffect(() => {
+  const fetchProfiles = async () => {
+    try {
+      setLoading(true);
+      const { data } = await api.get("/user/profiles");
+      setFeaturedProfiles(data);
+    } catch (err) {
+      console.error("Failed to fetch profiles:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchProfiles();
-  }, [setFeaturedProfiles]);
+  fetchProfiles();
+}, [setFeaturedProfiles]);
 
   const profiles = featuredIds
     .map((id) => profilesById[id])
@@ -46,6 +51,10 @@ export default function FeaturedProfiles() {
       setLoadingId(null);
     }
   };
+
+  if (loading && featuredIds.length === 0) {
+  return <FeaturedProfilesSkeleton />;
+}
 
   return (
     <div

@@ -7,6 +7,7 @@ import { usePostStore } from "@/app/store/postStore";
 import Image from "next/image";
 import PostCard from "@/app/components/PostCard";
 import EditProfileModal from "@/app/components/EditProfileModal";
+import { ProfilePageSkeleton } from "@/app/components/skeleton/ProfilePageSkeleton";
 
 export default function MyProfilePage() {
 
@@ -50,13 +51,7 @@ export default function MyProfilePage() {
 
   if (!profile) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="flex gap-2">
-          <span className="w-2 h-2 rounded-full bg-[#E056A4] dot-pulse" />
-          <span className="w-2 h-2 rounded-full bg-[#E056A4] dot-pulse-2" />
-          <span className="w-2 h-2 rounded-full bg-[#E056A4] dot-pulse-3" />
-        </div>
-      </div>
+       <ProfilePageSkeleton />
     );
   }
 
