@@ -6,8 +6,13 @@ import PostCard from "./PostCard";
 import { PostCardSkeleton } from "./skeleton/PostSkeleton";
 
 export function FeedList() {
-  const { postsById, feedIds, fetchFeed, loadMore, loading, selectedTag } =
-    usePostStore();
+  const postsById = usePostStore((s) => s.postsById);
+  const feedIds = usePostStore((s) => s.feedIds);
+  const fetchFeed = usePostStore((s) => s.fetchFeed);
+  const loadMore = usePostStore((s) => s.loadMore);
+  const loading = usePostStore((s) => s.loading);
+  const selectedTag = usePostStore((s) => s.selectedTag);
+  const loadingFeed = usePostStore((s) => s.loadingFeed);
 
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
@@ -36,7 +41,6 @@ export function FeedList() {
 
   const posts = filteredIds.map((id) => postsById[id]);
 
-  const loadingFeed = usePostStore((s) => s.loadingFeed);
   const isInitialLoading = loadingFeed && feedIds.length === 0;
 
   if (!isInitialLoading && posts.length === 0 && selectedTag) {
@@ -46,7 +50,7 @@ export function FeedList() {
       </div>
     );
   }
-
+  
   return (
     <div className="flex flex-col gap-4">
       {isInitialLoading

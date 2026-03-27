@@ -21,16 +21,16 @@ export default function TrendingHashtags() {
 
   useEffect(() => {
     const load = async () => {
-  try {
-    setLoading(true);
-    const { data } = await api.get("/post/hashtags/trending");
-    setHashtags(data);
-  } catch (err) {
-    console.error(err);
-  } finally {
-    setLoading(false);
-  }
-};
+      try {
+        setLoading(true);
+        const { data } = await api.get("/post/hashtags/trending");
+        setHashtags(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
     load();
 
@@ -47,8 +47,8 @@ export default function TrendingHashtags() {
   }, []);
 
   if (loading && hashtags.length === 0) {
-  return <TrendingHashtagsSkeleton />;
-}
+    return <TrendingHashtagsSkeleton />;
+  }
 
   return (
     <div
@@ -72,9 +72,7 @@ export default function TrendingHashtags() {
         </span>
 
         <div>
-          <p className="text-sm font-bold text-black">
-            Trending Hashtags
-          </p>
+          <p className="text-sm font-bold text-black">Trending Hashtags</p>
           <p className="text-xs text-gray-700">
             Explore what&apos;s hot right now
           </p>
@@ -107,26 +105,17 @@ export default function TrendingHashtags() {
               onMouseLeave={() => setHovered(null)}
               className="flex justify-between px-4 py-2 text-left transition rounded-xl"
               style={{
-                background:
-                  active || isHovered
-                    ? "#E056A4"
-                    : "transparent",
+                background: active || isHovered ? "#E056A4" : "transparent",
                 color: active || isHovered ? "#fff" : "#000",
               }}
             >
               <div className="flex gap-2 items-center">
-                <span className="text-xs text-gray-600">
-                  {i + 1}
-                </span>
+                <span className="text-xs text-gray-600">{i + 1}</span>
 
-                <span className="text-sm font-semibold">
-                  #{tag}
-                </span>
+                <span className="text-sm font-semibold">#{tag}</span>
               </div>
 
-              <span className="text-xs">
-                {count} posts
-              </span>
+              <span className="text-xs">{count} posts</span>
             </button>
           );
         })}

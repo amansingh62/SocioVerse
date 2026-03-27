@@ -39,7 +39,6 @@ interface PostState {
   fetchFeed: () => Promise<void>;
   fetchExploreFeed: () => Promise<void>;
   loadMore: () => Promise<void>;
-  
 
   getProfilePostIds: (userId: string) => string[];
   getProfilePosts: (userId: string) => Post[];
@@ -49,7 +48,7 @@ interface PostState {
 
   fetchProfilePosts: (userId: string) => Promise<void>;
   fetchAllComments: (postId: string) => Promise<void>;
-  deleteComment: (commentId: string) => Promise<void>;
+  deleteComment: (commentId: string, postId: string) => Promise<void>;
   fetchSavedPosts: () => Promise<void>;
 
   setSelectedTag: (tag: string | null) => void;
@@ -59,11 +58,7 @@ interface PostState {
   toggleSave: (postId: string) => Promise<void>;
   deletePost: (postId: string) => Promise<void>;
 
-  addComment: (
-    postId: string,
-    content: string,
-    parentId?: string | null
-  ) => Promise<void>;
+  addComment: (postId: string, content: string) => Promise<void>;
 
   initSocketListeners: () => void;
 }
@@ -78,63 +73,63 @@ export const usePostStore = create<PostState>((set, get) => ({
 
   nextCursor: null,
   loading: false,
-loadingFeed: false,
-loadingExplore: false,
+  loadingFeed: false,
+  loadingExplore: false,
   selectedTag: null,
 
   setSelectedTag: (tag) => set({ selectedTag: tag }),
 
   fetchFeed: async () => {
-  set({ loadingFeed: true });
+    set({ loadingFeed: true });
 
-  try {
-    const { data } = await api.get("/post/feed");
+    try {
+      const { data } = await api.get("/post/feed");
 
-    const map: Record<string, Post> = {};
-    const ids: string[] = [];
+      const map: Record<string, Post> = {};
+      const ids: string[] = [];
 
-    data.posts.forEach((p: Post) => {
-      map[p.id] = p;
-      ids.push(p.id);
-    });
+      data.posts.forEach((p: Post) => {
+        map[p.id] = p;
+        ids.push(p.id);
+      });
 
-    set((state) => ({
-      postsById: { ...state.postsById, ...map },
-      feedIds: unique(ids),
-      nextCursor: data.nextCursor,
-      loadingFeed: false,
-    }));
-  } catch (err) {
-    console.error(err);
-    set({ loadingFeed: false });
-  }
-},
+      set((state) => ({
+        postsById: { ...state.postsById, ...map },
+        feedIds: unique(ids),
+        nextCursor: data.nextCursor,
+        loadingFeed: false,
+      }));
+    } catch (err) {
+      console.error(err);
+      set({ loadingFeed: false });
+    }
+  },
 
- fetchExploreFeed: async () => {
-  set({ loadingExplore: true });
+  fetchExploreFeed: async () => {
+    set({ loadingExplore: true });
 
-  try {
-    const { data } = await api.get("/post/explore");
+    try {
+      const { data } = await api.get("/post/explore");
 
-    const map: Record<string, Post> = {};
-    const ids: string[] = [];
+      const map: Record<string, Post> = {};
+      const ids: string[] = [];
 
-    data.posts.forEach((p: Post) => {
-      map[p.id] = p;
-      ids.push(p.id);
-    });
+      data.posts.forEach((p: Post) => {
+        map[p.id] = p;
+        ids.push(p.id);
+      });
 
-    set((state) => ({
-      postsById: { ...state.postsById, ...map },
-      exploreIds: unique(ids),
-      nextCursor: data.nextCursor,
-      loadingExplore: false,
-    }));
-  } catch (err) {
-    console.error(err);
-    set({ loadingExplore: false });
-  }
-},
+      set((state) => ({
+        postsById: { ...state.postsById, ...map },
+        exploreIds: unique(ids),
+        nextCursor: data.nextCursor,
+        loadingExplore: false,
+      }));
+    } catch (err) {
+      console.error(err);
+      set({ loadingExplore: false });
+    }
+  },
 
   loadMore: async () => {
     const { nextCursor, loading } = get();
@@ -170,34 +165,32 @@ loadingExplore: false,
   },
 
   getProfilePostIds: (userId) => {
-  const state = get();
-  return state.profilePostIdsByUser[userId] || [];
-},
+    const state = get();
+    return state.profilePostIdsByUser[userId] || [];
+  },
 
-getProfilePosts: (userId) => {
-  const state = get();
-  const ids = state.profilePostIdsByUser[userId] || [];
+  getProfilePosts: (userId) => {
+    const state = get();
+    const ids = state.profilePostIdsByUser[userId] || [];
 
-  return ids
-    .map((id) => state.postsById[id])
-    .filter(Boolean);
-},
+    return ids.map((id) => state.postsById[id]).filter(Boolean);
+  },
 
-ensureProfilePosts: async (userId: string) => {
-  const state = get();
+  ensureProfilePosts: async (userId: string) => {
+    const state = get();
 
-  if (!state.profilePostIdsByUser[userId]) {
-    await state.fetchProfilePosts(userId);
-  }
-},
+    if (!state.profilePostIdsByUser[userId]) {
+      await state.fetchProfilePosts(userId);
+    }
+  },
 
-ensureSavedPosts: async () => {
-  const state = get();
+  ensureSavedPosts: async () => {
+    const state = get();
 
-  if (state.savedIds.length === 0) {
-    await state.fetchSavedPosts();
-  }
-},
+    if (state.savedIds.length === 0) {
+      await state.fetchSavedPosts();
+    }
+  },
 
   fetchProfilePosts: async (userId) => {
     const { data } = await api.get(`/user/${userId}/posts`);
@@ -238,20 +231,28 @@ ensureSavedPosts: async () => {
     });
   },
 
-  deleteComment: async (commentId) => {
+  deleteComment: async (commentId: string, postId: string) => {
     await api.delete(`/post/comment/${commentId}`);
 
     set((state) => {
-      const posts = { ...state.postsById };
+      const post = state.postsById[postId];
+      if (!post || !post.comments) return state;
 
-      Object.values(posts).forEach((post) => {
-        if (!post.comments) return;
+      const updatedComments = post.comments.filter((c) => c.id !== commentId);
 
-        post.comments = post.comments.filter((c) => c.id !== commentId);
-        post._count.comments = Math.max(0, post._count.comments - 1);
-      });
-
-      return { postsById: posts };
+      return {
+        postsById: {
+          ...state.postsById,
+          [postId]: {
+            ...post,
+            comments: updatedComments,
+            _count: {
+              ...post._count,
+              comments: Math.max(0, post._count.comments - 1),
+            },
+          },
+        },
+      };
     });
   },
 
@@ -289,55 +290,89 @@ ensureSavedPosts: async () => {
   },
 
   toggleLike: async (postId) => {
-    const { data } = await api.post(`/post/${postId}/like`);
+  const post = get().postsById[postId];
+  if (!post) return;
 
+  const wasLiked = post.isLiked;
+  const optimisticLiked = !wasLiked;
+  const optimisticCount = post._count.likes + (optimisticLiked ? 1 : -1);
+
+  set((state) => ({
+    postsById: {
+      ...state.postsById,
+      [postId]: {
+        ...state.postsById[postId],
+        isLiked: optimisticLiked,
+        _count: { ...state.postsById[postId]._count, likes: optimisticCount },
+      },
+    },
+  }));
+
+  try {
+    const { data } = await api.post(`/post/${postId}/like`);
     recentLikedPostIds.add(postId);
     setTimeout(() => recentLikedPostIds.delete(postId), 5000);
 
-    set((state) => {
-      const post = state.postsById[postId];
-      if (!post) return {};
-
-      const diff = post.isLiked === data.isLiked ? 0 : data.isLiked ? 1 : -1;
-
-      return {
-        postsById: {
-          ...state.postsById,
-          [postId]: {
-            ...post,
-            isLiked: data.isLiked,
-            _count: {
-              ...post._count,
-              likes: post._count.likes + diff,
-            },
+    set((state) => ({
+      postsById: {
+        ...state.postsById,
+        [postId]: {
+          ...state.postsById[postId],
+          isLiked: data.isLiked,
+          _count: {
+            ...state.postsById[postId]._count,
+            likes: state.postsById[postId]._count.likes + (data.isLiked === optimisticLiked ? 0 : data.isLiked ? 1 : -1),
           },
         },
-      };
-    });
-  },
+      },
+    }));
+  } catch {
+    set((state) => ({
+      postsById: {
+        ...state.postsById,
+        [postId]: {
+          ...state.postsById[postId],
+          isLiked: wasLiked,
+          _count: { ...state.postsById[postId]._count, likes: post._count.likes },
+        },
+      },
+    }));
+  }
+},
 
   toggleSave: async (postId) => {
+  const post = get().postsById[postId];
+  if (!post) return;
+
+  const wasSaved = post.isSaved;
+  const optimisticSaved = !wasSaved;
+
+  set((state) => ({
+    postsById: {
+      ...state.postsById,
+      [postId]: { ...state.postsById[postId], isSaved: optimisticSaved },
+    },
+    savedIds: optimisticSaved
+      ? unique([...state.savedIds, postId])
+      : state.savedIds.filter((id) => id !== postId),
+  }));
+
+  try {
     await api.post(`/post/${postId}/save`);
+  } catch {
+    set((state) => ({
+      postsById: {
+        ...state.postsById,
+        [postId]: { ...state.postsById[postId], isSaved: wasSaved },
+      },
+      savedIds: wasSaved
+        ? unique([...state.savedIds, postId])
+        : state.savedIds.filter((id) => id !== postId),
+    }));
+  }
+},
 
-    set((state) => {
-      const post = state.postsById[postId];
-      if (!post) return {};
-
-      const saved = !post.isSaved;
-
-      return {
-        postsById: {
-          ...state.postsById,
-          [postId]: { ...post, isSaved: saved },
-        },
-        savedIds: saved
-          ? unique([...state.savedIds, postId])
-          : state.savedIds.filter((id) => id !== postId),
-      };
-    });
-  },
-
- deletePost: async (postId) => {
+  deletePost: async (postId) => {
     await api.delete(`/post/${postId}`);
 
     set((state) => {
@@ -351,56 +386,90 @@ ensureSavedPosts: async () => {
         savedIds: state.savedIds.filter((id) => id !== postId),
 
         profilePostIdsByUser: Object.fromEntries(
-          Object.entries(state.profilePostIdsByUser).map(
-            ([userId, ids]) => [
-              userId,
-              ids.filter((id) => id !== postId),
-            ]
-          )
+          Object.entries(state.profilePostIdsByUser).map(([userId, ids]) => [
+            userId,
+            ids.filter((id) => id !== postId),
+          ]),
         ),
       };
     });
   },
 
-  addComment: async (postId, content, parentId = null) => {
-    try {
-      const { data } = await api.post(`/post/${postId}/comment`, {
-        content,
-        parentId,
-      });
+  addComment: async (postId: string, content: string) => {
+  const post = get().postsById[postId];
+  if (!post) return;
 
-      const comment: PostComment = data.comment ?? data;
+  const tempId = `temp-${Date.now()}`;
+  const { user } = await import("./authStore").then((m) => ({ user: m.useAuthStore.getState().user }));
 
-      recentCommentIds.add(comment.id);
-      setTimeout(() => recentCommentIds.delete(comment.id), 5000);
+const optimisticComment: PostComment = {
+  id: tempId,
+  content,
+  createdAt: new Date().toISOString(),
+  optimistic: true,
+  user: {
+    id: user?.id ?? "",
+    username: user?.username ?? "You",
+    image: user?.image ?? null,
+  },
+};
 
-      set((state) => {
-        const post = state.postsById[postId];
-        if (!post) return {};
+  set((state) => ({
+    postsById: {
+      ...state.postsById,
+      [postId]: {
+        ...state.postsById[postId],
+        comments: [optimisticComment, ...(state.postsById[postId].comments ?? [])],
+        _count: {
+          ...state.postsById[postId]._count,
+          comments: state.postsById[postId]._count.comments + 1,
+        },
+      },
+    },
+  }));
 
-        const alreadyExists = (post.comments ?? []).some(
-          (c) => c.id === comment.id
-        );
-        if (alreadyExists) return state;
+  try {
+    const { data } = await api.post(`/post/${postId}/comment`, { content });
+    const comment: PostComment = data.comment ?? data;
 
-        return {
-          postsById: {
-            ...state.postsById,
-            [postId]: {
-              ...post,
-              comments: [comment, ...(post.comments ?? [])],
-              _count: {
-                ...post._count,
-                comments: post._count.comments + 1,
-              },
+    recentCommentIds.add(comment.id);
+    setTimeout(() => recentCommentIds.delete(comment.id), 5000);
+
+    set((state) => {
+      const p = state.postsById[postId];
+      if (!p) return state;
+      return {
+        postsById: {
+          ...state.postsById,
+          [postId]: {
+            ...p,
+            comments: (p.comments ?? []).map((c) =>
+              c.id === tempId ? comment : c
+            ),
+          },
+        },
+      };
+    });
+  } catch {
+    set((state) => {
+      const p = state.postsById[postId];
+      if (!p) return state;
+      return {
+        postsById: {
+          ...state.postsById,
+          [postId]: {
+            ...p,
+            comments: (p.comments ?? []).filter((c) => c.id !== tempId),
+            _count: {
+              ...p._count,
+              comments: Math.max(0, p._count.comments - 1),
             },
           },
-        };
-      });
-    } catch (err) {
-      console.error(err);
-    }
-  },
+        },
+      };
+    });
+  }
+},
 
   initSocketListeners: () => {
     const socket = getSocket();
@@ -463,7 +532,7 @@ ensureSavedPosts: async () => {
         if (!post) return {};
 
         const alreadyExists = (post.comments ?? []).some(
-          (c) => c.id === comment.id
+          (c) => c.id === comment.id,
         );
         if (alreadyExists) return state;
 

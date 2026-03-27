@@ -97,7 +97,6 @@ export default function EditProfileModal({
       "
       >
 
-        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h2 className="font-display text-[24px] font-semibold text-[#7a1d4f]">
@@ -122,7 +121,6 @@ export default function EditProfileModal({
           </button>
         </div>
 
-        {/* Avatar */}
         <div className="flex flex-col items-center gap-3">
 
           <div className="relative group">
@@ -149,7 +147,6 @@ export default function EditProfileModal({
 
             </div>
 
-            {/* Upload overlay */}
             <label
               className="
               absolute inset-0 rounded-full flex flex-col items-center justify-center
@@ -179,7 +176,6 @@ export default function EditProfileModal({
 
         <div className="h-px bg-[rgba(224,86,164,0.15)]" />
 
-        {/* Username */}
         <div className="flex flex-col gap-1.5">
 
           <label className="text-[11px] text-[#d15a9f] uppercase tracking-wide">
@@ -199,7 +195,6 @@ export default function EditProfileModal({
 
         </div>
 
-        {/* Bio */}
         <div className="flex flex-col gap-1.5">
 
           <label className="text-[11px] text-[#d15a9f] uppercase tracking-wide">
@@ -226,7 +221,6 @@ export default function EditProfileModal({
           </p>
         )}
 
-        {/* Buttons */}
         <div className="flex gap-3">
 
           <button
