@@ -31,7 +31,6 @@ export type ChannelMessageMinAggregateOutputType = {
   channelId: string | null
   isDeleted: boolean | null
   createdAt: Date | null
-  updatedAt: Date | null
 }
 
 export type ChannelMessageMaxAggregateOutputType = {
@@ -41,7 +40,6 @@ export type ChannelMessageMaxAggregateOutputType = {
   channelId: string | null
   isDeleted: boolean | null
   createdAt: Date | null
-  updatedAt: Date | null
 }
 
 export type ChannelMessageCountAggregateOutputType = {
@@ -51,7 +49,6 @@ export type ChannelMessageCountAggregateOutputType = {
   channelId: number
   isDeleted: number
   createdAt: number
-  updatedAt: number
   _all: number
 }
 
@@ -63,7 +60,6 @@ export type ChannelMessageMinAggregateInputType = {
   channelId?: true
   isDeleted?: true
   createdAt?: true
-  updatedAt?: true
 }
 
 export type ChannelMessageMaxAggregateInputType = {
@@ -73,7 +69,6 @@ export type ChannelMessageMaxAggregateInputType = {
   channelId?: true
   isDeleted?: true
   createdAt?: true
-  updatedAt?: true
 }
 
 export type ChannelMessageCountAggregateInputType = {
@@ -83,7 +78,6 @@ export type ChannelMessageCountAggregateInputType = {
   channelId?: true
   isDeleted?: true
   createdAt?: true
-  updatedAt?: true
   _all?: true
 }
 
@@ -166,7 +160,6 @@ export type ChannelMessageGroupByOutputType = {
   channelId: string
   isDeleted: boolean
   createdAt: Date
-  updatedAt: Date
   _count: ChannelMessageCountAggregateOutputType | null
   _min: ChannelMessageMinAggregateOutputType | null
   _max: ChannelMessageMaxAggregateOutputType | null
@@ -197,7 +190,6 @@ export type ChannelMessageWhereInput = {
   channelId?: Prisma.StringFilter<"ChannelMessage"> | string
   isDeleted?: Prisma.BoolFilter<"ChannelMessage"> | boolean
   createdAt?: Prisma.DateTimeFilter<"ChannelMessage"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"ChannelMessage"> | Date | string
   sender?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   channel?: Prisma.XOR<Prisma.ChannelScalarRelationFilter, Prisma.ChannelWhereInput>
 }
@@ -209,7 +201,6 @@ export type ChannelMessageOrderByWithRelationInput = {
   channelId?: Prisma.SortOrder
   isDeleted?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
   sender?: Prisma.UserOrderByWithRelationInput
   channel?: Prisma.ChannelOrderByWithRelationInput
 }
@@ -224,7 +215,6 @@ export type ChannelMessageWhereUniqueInput = Prisma.AtLeast<{
   channelId?: Prisma.StringFilter<"ChannelMessage"> | string
   isDeleted?: Prisma.BoolFilter<"ChannelMessage"> | boolean
   createdAt?: Prisma.DateTimeFilter<"ChannelMessage"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"ChannelMessage"> | Date | string
   sender?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   channel?: Prisma.XOR<Prisma.ChannelScalarRelationFilter, Prisma.ChannelWhereInput>
 }, "id">
@@ -236,7 +226,6 @@ export type ChannelMessageOrderByWithAggregationInput = {
   channelId?: Prisma.SortOrder
   isDeleted?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
   _count?: Prisma.ChannelMessageCountOrderByAggregateInput
   _max?: Prisma.ChannelMessageMaxOrderByAggregateInput
   _min?: Prisma.ChannelMessageMinOrderByAggregateInput
@@ -252,7 +241,6 @@ export type ChannelMessageScalarWhereWithAggregatesInput = {
   channelId?: Prisma.StringWithAggregatesFilter<"ChannelMessage"> | string
   isDeleted?: Prisma.BoolWithAggregatesFilter<"ChannelMessage"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ChannelMessage"> | Date | string
-  updatedAt?: Prisma.DateTimeWithAggregatesFilter<"ChannelMessage"> | Date | string
 }
 
 export type ChannelMessageCreateInput = {
@@ -260,7 +248,6 @@ export type ChannelMessageCreateInput = {
   content: string
   isDeleted?: boolean
   createdAt?: Date | string
-  updatedAt?: Date | string
   sender: Prisma.UserCreateNestedOneWithoutChannelMessagesInput
   channel: Prisma.ChannelCreateNestedOneWithoutMessagesInput
 }
@@ -272,7 +259,6 @@ export type ChannelMessageUncheckedCreateInput = {
   channelId: string
   isDeleted?: boolean
   createdAt?: Date | string
-  updatedAt?: Date | string
 }
 
 export type ChannelMessageUpdateInput = {
@@ -280,7 +266,6 @@ export type ChannelMessageUpdateInput = {
   content?: Prisma.StringFieldUpdateOperationsInput | string
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sender?: Prisma.UserUpdateOneRequiredWithoutChannelMessagesNestedInput
   channel?: Prisma.ChannelUpdateOneRequiredWithoutMessagesNestedInput
 }
@@ -292,7 +277,6 @@ export type ChannelMessageUncheckedUpdateInput = {
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ChannelMessageCreateManyInput = {
@@ -302,7 +286,6 @@ export type ChannelMessageCreateManyInput = {
   channelId: string
   isDeleted?: boolean
   createdAt?: Date | string
-  updatedAt?: Date | string
 }
 
 export type ChannelMessageUpdateManyMutationInput = {
@@ -310,7 +293,6 @@ export type ChannelMessageUpdateManyMutationInput = {
   content?: Prisma.StringFieldUpdateOperationsInput | string
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ChannelMessageUncheckedUpdateManyInput = {
@@ -320,7 +302,6 @@ export type ChannelMessageUncheckedUpdateManyInput = {
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ChannelMessageListRelationFilter = {
@@ -340,7 +321,6 @@ export type ChannelMessageCountOrderByAggregateInput = {
   channelId?: Prisma.SortOrder
   isDeleted?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
 }
 
 export type ChannelMessageMaxOrderByAggregateInput = {
@@ -350,7 +330,6 @@ export type ChannelMessageMaxOrderByAggregateInput = {
   channelId?: Prisma.SortOrder
   isDeleted?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
 }
 
 export type ChannelMessageMinOrderByAggregateInput = {
@@ -360,7 +339,6 @@ export type ChannelMessageMinOrderByAggregateInput = {
   channelId?: Prisma.SortOrder
   isDeleted?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-  updatedAt?: Prisma.SortOrder
 }
 
 export type ChannelMessageCreateNestedManyWithoutSenderInput = {
@@ -452,7 +430,6 @@ export type ChannelMessageCreateWithoutSenderInput = {
   content: string
   isDeleted?: boolean
   createdAt?: Date | string
-  updatedAt?: Date | string
   channel: Prisma.ChannelCreateNestedOneWithoutMessagesInput
 }
 
@@ -462,7 +439,6 @@ export type ChannelMessageUncheckedCreateWithoutSenderInput = {
   channelId: string
   isDeleted?: boolean
   createdAt?: Date | string
-  updatedAt?: Date | string
 }
 
 export type ChannelMessageCreateOrConnectWithoutSenderInput = {
@@ -501,7 +477,6 @@ export type ChannelMessageScalarWhereInput = {
   channelId?: Prisma.StringFilter<"ChannelMessage"> | string
   isDeleted?: Prisma.BoolFilter<"ChannelMessage"> | boolean
   createdAt?: Prisma.DateTimeFilter<"ChannelMessage"> | Date | string
-  updatedAt?: Prisma.DateTimeFilter<"ChannelMessage"> | Date | string
 }
 
 export type ChannelMessageCreateWithoutChannelInput = {
@@ -509,7 +484,6 @@ export type ChannelMessageCreateWithoutChannelInput = {
   content: string
   isDeleted?: boolean
   createdAt?: Date | string
-  updatedAt?: Date | string
   sender: Prisma.UserCreateNestedOneWithoutChannelMessagesInput
 }
 
@@ -519,7 +493,6 @@ export type ChannelMessageUncheckedCreateWithoutChannelInput = {
   senderId: string
   isDeleted?: boolean
   createdAt?: Date | string
-  updatedAt?: Date | string
 }
 
 export type ChannelMessageCreateOrConnectWithoutChannelInput = {
@@ -554,7 +527,6 @@ export type ChannelMessageCreateManySenderInput = {
   channelId: string
   isDeleted?: boolean
   createdAt?: Date | string
-  updatedAt?: Date | string
 }
 
 export type ChannelMessageUpdateWithoutSenderInput = {
@@ -562,7 +534,6 @@ export type ChannelMessageUpdateWithoutSenderInput = {
   content?: Prisma.StringFieldUpdateOperationsInput | string
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   channel?: Prisma.ChannelUpdateOneRequiredWithoutMessagesNestedInput
 }
 
@@ -572,7 +543,6 @@ export type ChannelMessageUncheckedUpdateWithoutSenderInput = {
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ChannelMessageUncheckedUpdateManyWithoutSenderInput = {
@@ -581,7 +551,6 @@ export type ChannelMessageUncheckedUpdateManyWithoutSenderInput = {
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ChannelMessageCreateManyChannelInput = {
@@ -590,7 +559,6 @@ export type ChannelMessageCreateManyChannelInput = {
   senderId: string
   isDeleted?: boolean
   createdAt?: Date | string
-  updatedAt?: Date | string
 }
 
 export type ChannelMessageUpdateWithoutChannelInput = {
@@ -598,7 +566,6 @@ export type ChannelMessageUpdateWithoutChannelInput = {
   content?: Prisma.StringFieldUpdateOperationsInput | string
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sender?: Prisma.UserUpdateOneRequiredWithoutChannelMessagesNestedInput
 }
 
@@ -608,7 +575,6 @@ export type ChannelMessageUncheckedUpdateWithoutChannelInput = {
   senderId?: Prisma.StringFieldUpdateOperationsInput | string
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ChannelMessageUncheckedUpdateManyWithoutChannelInput = {
@@ -617,7 +583,6 @@ export type ChannelMessageUncheckedUpdateManyWithoutChannelInput = {
   senderId?: Prisma.StringFieldUpdateOperationsInput | string
   isDeleted?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -629,7 +594,6 @@ export type ChannelMessageSelect<ExtArgs extends runtime.Types.Extensions.Intern
   channelId?: boolean
   isDeleted?: boolean
   createdAt?: boolean
-  updatedAt?: boolean
   sender?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   channel?: boolean | Prisma.ChannelDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["channelMessage"]>
@@ -641,7 +605,6 @@ export type ChannelMessageSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   channelId?: boolean
   isDeleted?: boolean
   createdAt?: boolean
-  updatedAt?: boolean
   sender?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   channel?: boolean | Prisma.ChannelDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["channelMessage"]>
@@ -653,7 +616,6 @@ export type ChannelMessageSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   channelId?: boolean
   isDeleted?: boolean
   createdAt?: boolean
-  updatedAt?: boolean
   sender?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   channel?: boolean | Prisma.ChannelDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["channelMessage"]>
@@ -665,10 +627,9 @@ export type ChannelMessageSelectScalar = {
   channelId?: boolean
   isDeleted?: boolean
   createdAt?: boolean
-  updatedAt?: boolean
 }
 
-export type ChannelMessageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "content" | "senderId" | "channelId" | "isDeleted" | "createdAt" | "updatedAt", ExtArgs["result"]["channelMessage"]>
+export type ChannelMessageOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "content" | "senderId" | "channelId" | "isDeleted" | "createdAt", ExtArgs["result"]["channelMessage"]>
 export type ChannelMessageInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   sender?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   channel?: boolean | Prisma.ChannelDefaultArgs<ExtArgs>
@@ -695,7 +656,6 @@ export type $ChannelMessagePayload<ExtArgs extends runtime.Types.Extensions.Inte
     channelId: string
     isDeleted: boolean
     createdAt: Date
-    updatedAt: Date
   }, ExtArgs["result"]["channelMessage"]>
   composites: {}
 }
@@ -1127,7 +1087,6 @@ export interface ChannelMessageFieldRefs {
   readonly channelId: Prisma.FieldRef<"ChannelMessage", 'String'>
   readonly isDeleted: Prisma.FieldRef<"ChannelMessage", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"ChannelMessage", 'DateTime'>
-  readonly updatedAt: Prisma.FieldRef<"ChannelMessage", 'DateTime'>
 }
     
 

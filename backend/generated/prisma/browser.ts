@@ -88,12 +88,12 @@ export type Message = Prisma.MessageModel
  */
 export type Channel = Prisma.ChannelModel
 /**
- * Model ChannelMember
- * 
- */
-export type ChannelMember = Prisma.ChannelMemberModel
-/**
  * Model ChannelMessage
  * 
  */
 export type ChannelMessage = Prisma.ChannelMessageModel
+/**
+ * Model ChannelBlocked
+ * 
+ */
+export type ChannelBlocked = Prisma.ChannelBlockedModel

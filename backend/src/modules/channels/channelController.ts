@@ -1,155 +1,348 @@
-import type { Request, Response } from "express"
+import type { Request, Response } from "express";
 import { StatusCodes } from "../../constants/statusCodes.js";
 import { prisma } from "../../lib/prisma.js";
 import { getIO } from "../../lib/websocket.js";
 
-export const creatChannel = async (req: Request, res: Response) => {
-   const userId = req.userId;
-   const { name } = req.body;
+export const createChannel = async (req: Request, res: Response) => {
+  const userId = req.userId;
+  const { name } = req.body;
 
-   if(!userId) return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unathorized" });
+  if (!userId) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
 
-   if(!name || !name.trim()) return res.status(StatusCodes.BAD_REQUEST).json({ message: "Not valid"});
+  if (!name || !name.trim()) {
+    return res.status(400).json({ message: "Channel name required" });
+  }
 
-   const channel = await prisma.channel.create({
-    data:{
-        name,
-        creatorId: userId,
-        members: {
-            create: {
-                userId,
-                role: "ADMIN"
-            }
-        }
-    }
-   });
+  const now = new Date();
 
-   return res.json(channel);
-};
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { lastChannelCreatedAt: true },
+  });
 
-export const joinChannel = async (req: Request, res: Response) => {
-    const userId = req.userId;
-    const { channelId } = req.params;
+  const fourteenDaysAgo = new Date(
+    now.getTime() - 14 * 24 * 60 * 60 * 1000
+  );
 
-    if(!userId) return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unathorized" });
+  if (
+    user?.lastChannelCreatedAt &&
+    user.lastChannelCreatedAt >= fourteenDaysAgo
+  ) {
+    return res.status(403).json({
+      message: "You can create only one channel every 14 days",
+    });
+  }
 
-    if(!channelId) return res.status(StatusCodes.NOT_FOUND).json({ message: "Channel not found" });
+  const expiresAt = new Date(
+    now.getTime() + 8 * 24 * 60 * 60 * 1000
+  );
 
-    if(typeof channelId !== "string") return res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid response"});
-
-    const existing = await prisma.channelMember.findUnique({
+  try {
+    const channel = await prisma.$transaction(async (tx) => {
+      await tx.channel.deleteMany({
         where: {
-            userId_channelId: {
-               userId,
-               channelId
-            }
-        }
-    });
-
-    if(existing) return res.status(StatusCodes.FORBIDDEN).json({ message: "Already a member" });
-
-    const member = await prisma.channelMember.create({
-        data: {
-            userId,
-            channelId
-        }
-    });
-
-    return res.status(StatusCodes.OK).json(member);
-};
-
-export const sendChannelMessage = async (req: Request, res: Response) => { 
-    const userId = req.userId;
-    const { channelId, content } = req.body;
-
-    if(!userId) return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unathorized" });
-
-    if(!channelId) return res.status(StatusCodes.NOT_FOUND).json({ message: "Channel not found" });
-
-    if(typeof channelId !== "string") return res.status(StatusCodes.BAD_REQUEST).json({ message: "Invalid response"});
-
-    const existing = await prisma.channelMember.findUnique({
-        where: {
-            userId_channelId: {
-                userId,
-                channelId
-            }
-        }
-    });
-
-    if(!existing) return res.status(StatusCodes.NOT_FOUND).json({ message: "Not a member" });
-
-
-    const message = await prisma.channelMessage.create({
-        data: {
-            content,
-            channelId,
-            senderId: userId
+          expiresAt: {
+            lt: now,
+          },
         },
-        include: {
-            sender: {
-                select: {
-                    id: true,
-                    username: true,
-                    image: true
-                }
-            }
-        }
+      });
+
+      const count = await tx.channel.count();
+
+      if (count >= 8) {
+        throw new Error("Max 8 channels allowed");
+      }
+
+      const newChannel = await tx.channel.create({
+        data: {
+          name: name.trim(),
+          creatorId: userId,
+          expiresAt,
+        },
+      });
+
+      await tx.user.update({
+        where: { id: userId },
+        data: {
+          lastChannelCreatedAt: now,
+        },
+      });
+
+      return newChannel;
     });
 
-    const io = getIO();
+    return res.status(201).json(channel);
 
-    io.to(channelId).emit("channelMessaage", message);
-
-    return res.json(message);
-};
-
-export const removeMember = async (req: Request, res: Response) => {
-    const adminId = req.userId;
-    const { channelId, userId } = req.body;
-
-    if(!adminId) return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unathorized" });
-
-    const isAdmin = await prisma.channelMember.findUnique({
-        where: {
-            userId_channelId: {
-                userId: adminId,
-                channelId,
-            }
-        }
+  } catch (err: any) {
+    return res.status(400).json({
+      message: err.message || "Failed to create channel",
     });
-
-    if(!isAdmin || isAdmin.role !== "ADMIN") {
-        return res.status(StatusCodes.FORBIDDEN).json({ message: "Not allowed" });
-    };
-
-    await prisma.channelMember.delete({
-        where: {
-            userId_channelId: {
-                userId,
-                channelId
-            }
-        }
-    });
-
-    return res.json({ message: "User removed" });
+  }
 };
 
 export const deleteChannel = async (req: Request, res: Response) => {
   const userId = req.userId;
   const { channelId } = req.params as { channelId: string };
 
+  if(!userId) return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unathorized" });
+
+  if(!channelId) return res.status(StatusCodes.NOT_FOUND).json({ message: "No channel found" });
+
   const channel = await prisma.channel.findUnique({
+    where: { id: channelId },
+    select: {
+      id: true,
+      creatorId: true
+    }
+  });
+
+    if (!channel) {
+    return res.status(404).json({ message: "Channel not found" });
+  }
+
+  if(channel.creatorId !== userId) return res.status(StatusCodes.FORBIDDEN).json({ message: "Only channel owner can delete" });
+
+    await prisma.channel.delete({
     where: { id: channelId },
   });
 
-  if (!channel || channel.creatorId !== userId) {
+  return res.json({ message: "Channel deleted successfully" });
+};
+
+export const blockUserInChannel = async (req: Request, res: Response) => {
+  const adminId = req.userId;
+  const { channelId, userId } = req.body;
+
+  if (!adminId) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  if (!channelId || !userId) {
+    return res.status(400).json({ message: "Missing fields" });
+  }
+
+  const channel = await prisma.channel.findUnique({
+    where: { id: channelId },
+    select: { creatorId: true },
+  });
+
+  if (!channel) {
+    return res.status(404).json({ message: "Channel not found" });
+  }
+
+  if (channel.creatorId !== adminId) {
     return res.status(403).json({ message: "Not allowed" });
   }
 
-  await prisma.channel.delete({
+  if (adminId === userId) {
+    return res.status(400).json({ message: "Cannot block yourself" });
+  }
+
+  try {
+    const blocked = await prisma.channelBlocked.create({
+      data: {
+        channelId,
+        userId,
+      },
+    });
+
+    return res.status(201).json({
+      message: "User blocked successfully",
+      blocked,
+    });
+
+  } catch (err: any) {
+    return res.status(400).json({
+      message: "User already blocked",
+    });
+  }
+};
+
+export const unblockUserInChannel = async (req: Request, res: Response) => {
+  const adminId = req.userId;
+  const { channelId, userId } = req.body;
+
+  if (!adminId) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const channel = await prisma.channel.findUnique({
     where: { id: channelId },
+    select: { creatorId: true },
   });
 
-  res.json({ message: "Channel deleted" });
+  if (!channel || channel.creatorId !== adminId) {
+    return res.status(403).json({ message: "Not allowed" });
+  }
+
+  await prisma.channelBlocked.deleteMany({
+    where: {
+      channelId,
+      userId,
+    },
+  });
+
+  return res.json({ message: "User unblocked" });
+};
+
+export const sendChannelMessage = async (req: Request, res: Response) => {
+  const userId = req.userId;
+  const { channelId } = req.params as { channelId: string };
+  const { content } = req.body;
+
+  if (!userId) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  if (!channelId) {
+    return res.status(400).json({ message: "Channel ID required" });
+  }
+
+  if (!content || !content.trim()) {
+    return res.status(400).json({ message: "Message content required" });
+  }
+
+  const channel = await prisma.channel.findUnique({
+    where: { id: channelId },
+    select: { id: true, expiresAt: true },
+  });
+
+  if (!channel) {
+    return res.status(404).json({ message: "Channel not found" });
+  }
+
+  if (channel.expiresAt < new Date()) {
+    return res.status(400).json({ message: "Channel expired" });
+  }
+
+  const blocked = await prisma.channelBlocked.findUnique({
+    where: {
+      channelId_userId: {
+        channelId,
+        userId,
+      },
+    },
+  });
+
+  if (blocked) {
+    return res.status(403).json({
+      message: "You are blocked in this channel",
+    });
+  }
+
+  const message = await prisma.channelMessage.create({
+    data: {
+      content: content.trim(),
+      channelId,
+      senderId: userId,
+    },
+    include: {
+      sender: {
+        select: {
+          id: true,
+          username: true,
+          image: true,
+        },
+      },
+    },
+  });
+
+  await prisma.channel.update({
+    where: { id: channelId },
+    data: { lastMessageAt: new Date() },
+  });
+
+  const io = getIO();
+  io.to(channelId).emit("channelMessage", message);
+
+  return res.status(201).json(message);
+};
+
+export const getChannels = async (req: Request, res: Response) => {
+  const now = new Date();
+
+  await prisma.channel.deleteMany({
+    where: {
+      expiresAt: {
+        lt: now,
+      },
+    },
+  });
+
+  const channels = await prisma.channel.findMany({
+    where: {
+      expiresAt: {
+        gt: now,
+      },
+    },
+    select: {
+      id: true,
+      name: true,
+      createdAt: true,
+      expiresAt: true,
+      lastMessageAt: true,
+      creator: {
+        select: {
+          id: true,
+          username: true,
+        },
+      },
+    },
+    orderBy: {
+      lastMessageAt: "desc", 
+    },
+  });
+
+  return res.json(channels);
+};
+
+export const getChannel = async (req: Request, res: Response) => {
+  const { channelId } = req.params as { channelId: string };
+
+  if (!channelId) {
+    return res.status(400).json({ message: "Channel ID required" });
+  }
+
+  const channel = await prisma.channel.findUnique({
+    where: { id: channelId },
+    select: {
+      id: true,
+      name: true,
+      createdAt: true,
+      expiresAt: true,
+      creator: {
+        select: {
+          id: true,
+          username: true,
+        },
+      },
+      messages: {
+        orderBy: {
+          createdAt: "asc",
+        },
+        take: 50, 
+        include: {
+          sender: {
+            select: {
+              id: true,
+              username: true,
+              image: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!channel) {
+    return res.status(404).json({ message: "Channel not found" });
+  }
+
+  if (channel.expiresAt < new Date()) {
+    return res.status(400).json({ message: "Channel expired" });
+  }
+
+  return res.json(channel);
 };

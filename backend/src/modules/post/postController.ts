@@ -282,7 +282,7 @@ export const toggleSave = async (req: Request, res: Response) => {
 export const addComment = async (req: Request, res: Response) => {
   const userId = req.userId;
   const { id: postId } = req.params as { id: string };
-  const { content, parentId } = req.body;
+  const { content } = req.body;
 
   if (!userId) {
     return res
@@ -312,7 +312,6 @@ export const addComment = async (req: Request, res: Response) => {
       content: content.trim(),
       userId,
       postId,
-      parentId: parentId ?? null,
     },
     include: {
       user: {

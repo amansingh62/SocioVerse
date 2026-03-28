@@ -398,8 +398,8 @@ export const ModelName = {
   ConversationMember: 'ConversationMember',
   Message: 'Message',
   Channel: 'Channel',
-  ChannelMember: 'ChannelMember',
-  ChannelMessage: 'ChannelMessage'
+  ChannelMessage: 'ChannelMessage',
+  ChannelBlocked: 'ChannelBlocked'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -415,7 +415,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "refreshToken" | "follow" | "post" | "like" | "comment" | "savedPosts" | "notification" | "hashTag" | "postHashTag" | "conversation" | "conversationMember" | "message" | "channel" | "channelMember" | "channelMessage"
+    modelProps: "user" | "refreshToken" | "follow" | "post" | "like" | "comment" | "savedPosts" | "notification" | "hashTag" | "postHashTag" | "conversation" | "conversationMember" | "message" | "channel" | "channelMessage" | "channelBlocked"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1455,80 +1455,6 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
-    ChannelMember: {
-      payload: Prisma.$ChannelMemberPayload<ExtArgs>
-      fields: Prisma.ChannelMemberFieldRefs
-      operations: {
-        findUnique: {
-          args: Prisma.ChannelMemberFindUniqueArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelMemberPayload> | null
-        }
-        findUniqueOrThrow: {
-          args: Prisma.ChannelMemberFindUniqueOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelMemberPayload>
-        }
-        findFirst: {
-          args: Prisma.ChannelMemberFindFirstArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelMemberPayload> | null
-        }
-        findFirstOrThrow: {
-          args: Prisma.ChannelMemberFindFirstOrThrowArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelMemberPayload>
-        }
-        findMany: {
-          args: Prisma.ChannelMemberFindManyArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelMemberPayload>[]
-        }
-        create: {
-          args: Prisma.ChannelMemberCreateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelMemberPayload>
-        }
-        createMany: {
-          args: Prisma.ChannelMemberCreateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        createManyAndReturn: {
-          args: Prisma.ChannelMemberCreateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelMemberPayload>[]
-        }
-        delete: {
-          args: Prisma.ChannelMemberDeleteArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelMemberPayload>
-        }
-        update: {
-          args: Prisma.ChannelMemberUpdateArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelMemberPayload>
-        }
-        deleteMany: {
-          args: Prisma.ChannelMemberDeleteManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateMany: {
-          args: Prisma.ChannelMemberUpdateManyArgs<ExtArgs>
-          result: BatchPayload
-        }
-        updateManyAndReturn: {
-          args: Prisma.ChannelMemberUpdateManyAndReturnArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelMemberPayload>[]
-        }
-        upsert: {
-          args: Prisma.ChannelMemberUpsertArgs<ExtArgs>
-          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelMemberPayload>
-        }
-        aggregate: {
-          args: Prisma.ChannelMemberAggregateArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.AggregateChannelMember>
-        }
-        groupBy: {
-          args: Prisma.ChannelMemberGroupByArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.ChannelMemberGroupByOutputType>[]
-        }
-        count: {
-          args: Prisma.ChannelMemberCountArgs<ExtArgs>
-          result: runtime.Types.Utils.Optional<Prisma.ChannelMemberCountAggregateOutputType> | number
-        }
-      }
-    }
     ChannelMessage: {
       payload: Prisma.$ChannelMessagePayload<ExtArgs>
       fields: Prisma.ChannelMessageFieldRefs
@@ -1603,6 +1529,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ChannelBlocked: {
+      payload: Prisma.$ChannelBlockedPayload<ExtArgs>
+      fields: Prisma.ChannelBlockedFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ChannelBlockedFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelBlockedPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ChannelBlockedFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelBlockedPayload>
+        }
+        findFirst: {
+          args: Prisma.ChannelBlockedFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelBlockedPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ChannelBlockedFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelBlockedPayload>
+        }
+        findMany: {
+          args: Prisma.ChannelBlockedFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelBlockedPayload>[]
+        }
+        create: {
+          args: Prisma.ChannelBlockedCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelBlockedPayload>
+        }
+        createMany: {
+          args: Prisma.ChannelBlockedCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ChannelBlockedCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelBlockedPayload>[]
+        }
+        delete: {
+          args: Prisma.ChannelBlockedDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelBlockedPayload>
+        }
+        update: {
+          args: Prisma.ChannelBlockedUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelBlockedPayload>
+        }
+        deleteMany: {
+          args: Prisma.ChannelBlockedDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ChannelBlockedUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ChannelBlockedUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelBlockedPayload>[]
+        }
+        upsert: {
+          args: Prisma.ChannelBlockedUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ChannelBlockedPayload>
+        }
+        aggregate: {
+          args: Prisma.ChannelBlockedAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateChannelBlocked>
+        }
+        groupBy: {
+          args: Prisma.ChannelBlockedGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChannelBlockedGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ChannelBlockedCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ChannelBlockedCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1651,7 +1651,8 @@ export const UserScalarFieldEnum = {
   bio: 'bio',
   image: 'image',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  lastChannelCreatedAt: 'lastChannelCreatedAt'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -1787,24 +1788,13 @@ export type MessageScalarFieldEnum = (typeof MessageScalarFieldEnum)[keyof typeo
 export const ChannelScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  description: 'description',
-  isPublic: 'isPublic',
   creatorId: 'creatorId',
   lastMessageAt: 'lastMessageAt',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  expiresAt: 'expiresAt'
 } as const
 
 export type ChannelScalarFieldEnum = (typeof ChannelScalarFieldEnum)[keyof typeof ChannelScalarFieldEnum]
-
-
-export const ChannelMemberScalarFieldEnum = {
-  id: 'id',
-  userId: 'userId',
-  channelId: 'channelId',
-  role: 'role'
-} as const
-
-export type ChannelMemberScalarFieldEnum = (typeof ChannelMemberScalarFieldEnum)[keyof typeof ChannelMemberScalarFieldEnum]
 
 
 export const ChannelMessageScalarFieldEnum = {
@@ -1813,11 +1803,20 @@ export const ChannelMessageScalarFieldEnum = {
   senderId: 'senderId',
   channelId: 'channelId',
   isDeleted: 'isDeleted',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  createdAt: 'createdAt'
 } as const
 
 export type ChannelMessageScalarFieldEnum = (typeof ChannelMessageScalarFieldEnum)[keyof typeof ChannelMessageScalarFieldEnum]
+
+
+export const ChannelBlockedScalarFieldEnum = {
+  id: 'id',
+  channelId: 'channelId',
+  userId: 'userId',
+  createdAt: 'createdAt'
+} as const
+
+export type ChannelBlockedScalarFieldEnum = (typeof ChannelBlockedScalarFieldEnum)[keyof typeof ChannelBlockedScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1924,20 +1923,6 @@ export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
  * Reference to a field of type 'Boolean'
  */
 export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
-    
-
-
-/**
- * Reference to a field of type 'Role'
- */
-export type EnumRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Role'>
-    
-
-
-/**
- * Reference to a field of type 'Role[]'
- */
-export type ListEnumRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Role[]'>
     
 
 
@@ -2063,8 +2048,8 @@ export type GlobalOmitConfig = {
   conversationMember?: Prisma.ConversationMemberOmit
   message?: Prisma.MessageOmit
   channel?: Prisma.ChannelOmit
-  channelMember?: Prisma.ChannelMemberOmit
   channelMessage?: Prisma.ChannelMessageOmit
+  channelBlocked?: Prisma.ChannelBlockedOmit
 }
 
 /* Types for Logging */

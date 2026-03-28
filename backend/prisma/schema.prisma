@@ -35,6 +35,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  lastChannelCreatedAt DateTime?
+
   refreshToken RefreshToken[]
 
   posts      Post[]
@@ -48,9 +50,8 @@ model User {
   actor Notification[] @relation("ActorNotifications")
 
   messages      Message[]
-
+  blocked      ChannelBlocked[]
   creator       Channel[]       @relation("ChannelCreator")
-  channelMember ChannelMember[]
 
   channelMessages ChannelMessage[]
 
@@ -236,33 +237,21 @@ model Channel {
   id String @id @default(uuid())
 
   name        String
-  description String?
-  isPublic    Boolean @default(true)
 
   creatorId String
   creator   User   @relation("ChannelCreator", fields: [creatorId], references: [id], onDelete: Cascade)
 
-  members  ChannelMember[]
-  messages ChannelMessage[]
-
   lastMessageAt DateTime?
 
   createdAt DateTime @default(now())
-}
+  expiresAt DateTime
 
-model ChannelMember {
-  id String @id @default(uuid())
+  messages ChannelMessage[]
+  blocked  ChannelBlocked[]
 
-  userId    String
-  channelId String
-  role      Role   @default(MEMBER)
-
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, channelId])
-  @@index([channelId])
-  @@index([userId])
+  @@index([creatorId])
+  @@index([expiresAt])
+  @@index([creatorId, createdAt])
 }
 
 model ChannelMessage {
@@ -276,11 +265,26 @@ model ChannelMessage {
   isDeleted Boolean @default(false)
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   sender  User    @relation(fields: [senderId], references: [id], onDelete: Cascade)
   channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
 
   @@index([channelId])
   @@index([senderId])
+  @@index([createdAt])
+  @@index([channelId, createdAt])
+}
+
+model ChannelBlocked {
+  id  String  @id @default(uuid())
+
+  channelId String  
+  channel Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([channelId, userId])
 }

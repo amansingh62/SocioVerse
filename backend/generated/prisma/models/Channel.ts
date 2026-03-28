@@ -27,31 +27,28 @@ export type AggregateChannel = {
 export type ChannelMinAggregateOutputType = {
   id: string | null
   name: string | null
-  description: string | null
-  isPublic: boolean | null
   creatorId: string | null
   lastMessageAt: Date | null
   createdAt: Date | null
+  expiresAt: Date | null
 }
 
 export type ChannelMaxAggregateOutputType = {
   id: string | null
   name: string | null
-  description: string | null
-  isPublic: boolean | null
   creatorId: string | null
   lastMessageAt: Date | null
   createdAt: Date | null
+  expiresAt: Date | null
 }
 
 export type ChannelCountAggregateOutputType = {
   id: number
   name: number
-  description: number
-  isPublic: number
   creatorId: number
   lastMessageAt: number
   createdAt: number
+  expiresAt: number
   _all: number
 }
 
@@ -59,31 +56,28 @@ export type ChannelCountAggregateOutputType = {
 export type ChannelMinAggregateInputType = {
   id?: true
   name?: true
-  description?: true
-  isPublic?: true
   creatorId?: true
   lastMessageAt?: true
   createdAt?: true
+  expiresAt?: true
 }
 
 export type ChannelMaxAggregateInputType = {
   id?: true
   name?: true
-  description?: true
-  isPublic?: true
   creatorId?: true
   lastMessageAt?: true
   createdAt?: true
+  expiresAt?: true
 }
 
 export type ChannelCountAggregateInputType = {
   id?: true
   name?: true
-  description?: true
-  isPublic?: true
   creatorId?: true
   lastMessageAt?: true
   createdAt?: true
+  expiresAt?: true
   _all?: true
 }
 
@@ -162,11 +156,10 @@ export type ChannelGroupByArgs<ExtArgs extends runtime.Types.Extensions.Internal
 export type ChannelGroupByOutputType = {
   id: string
   name: string
-  description: string | null
-  isPublic: boolean
   creatorId: string
   lastMessageAt: Date | null
   createdAt: Date
+  expiresAt: Date
   _count: ChannelCountAggregateOutputType | null
   _min: ChannelMinAggregateOutputType | null
   _max: ChannelMaxAggregateOutputType | null
@@ -193,27 +186,25 @@ export type ChannelWhereInput = {
   NOT?: Prisma.ChannelWhereInput | Prisma.ChannelWhereInput[]
   id?: Prisma.StringFilter<"Channel"> | string
   name?: Prisma.StringFilter<"Channel"> | string
-  description?: Prisma.StringNullableFilter<"Channel"> | string | null
-  isPublic?: Prisma.BoolFilter<"Channel"> | boolean
   creatorId?: Prisma.StringFilter<"Channel"> | string
   lastMessageAt?: Prisma.DateTimeNullableFilter<"Channel"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Channel"> | Date | string
+  expiresAt?: Prisma.DateTimeFilter<"Channel"> | Date | string
   creator?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-  members?: Prisma.ChannelMemberListRelationFilter
   messages?: Prisma.ChannelMessageListRelationFilter
+  blocked?: Prisma.ChannelBlockedListRelationFilter
 }
 
 export type ChannelOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  description?: Prisma.SortOrderInput | Prisma.SortOrder
-  isPublic?: Prisma.SortOrder
   creatorId?: Prisma.SortOrder
   lastMessageAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  expiresAt?: Prisma.SortOrder
   creator?: Prisma.UserOrderByWithRelationInput
-  members?: Prisma.ChannelMemberOrderByRelationAggregateInput
   messages?: Prisma.ChannelMessageOrderByRelationAggregateInput
+  blocked?: Prisma.ChannelBlockedOrderByRelationAggregateInput
 }
 
 export type ChannelWhereUniqueInput = Prisma.AtLeast<{
@@ -222,24 +213,22 @@ export type ChannelWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.ChannelWhereInput[]
   NOT?: Prisma.ChannelWhereInput | Prisma.ChannelWhereInput[]
   name?: Prisma.StringFilter<"Channel"> | string
-  description?: Prisma.StringNullableFilter<"Channel"> | string | null
-  isPublic?: Prisma.BoolFilter<"Channel"> | boolean
   creatorId?: Prisma.StringFilter<"Channel"> | string
   lastMessageAt?: Prisma.DateTimeNullableFilter<"Channel"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Channel"> | Date | string
+  expiresAt?: Prisma.DateTimeFilter<"Channel"> | Date | string
   creator?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
-  members?: Prisma.ChannelMemberListRelationFilter
   messages?: Prisma.ChannelMessageListRelationFilter
+  blocked?: Prisma.ChannelBlockedListRelationFilter
 }, "id">
 
 export type ChannelOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  description?: Prisma.SortOrderInput | Prisma.SortOrder
-  isPublic?: Prisma.SortOrder
   creatorId?: Prisma.SortOrder
   lastMessageAt?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  expiresAt?: Prisma.SortOrder
   _count?: Prisma.ChannelCountOrderByAggregateInput
   _max?: Prisma.ChannelMaxOrderByAggregateInput
   _min?: Prisma.ChannelMinOrderByAggregateInput
@@ -251,88 +240,80 @@ export type ChannelScalarWhereWithAggregatesInput = {
   NOT?: Prisma.ChannelScalarWhereWithAggregatesInput | Prisma.ChannelScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"Channel"> | string
   name?: Prisma.StringWithAggregatesFilter<"Channel"> | string
-  description?: Prisma.StringNullableWithAggregatesFilter<"Channel"> | string | null
-  isPublic?: Prisma.BoolWithAggregatesFilter<"Channel"> | boolean
   creatorId?: Prisma.StringWithAggregatesFilter<"Channel"> | string
   lastMessageAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Channel"> | Date | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Channel"> | Date | string
+  expiresAt?: Prisma.DateTimeWithAggregatesFilter<"Channel"> | Date | string
 }
 
 export type ChannelCreateInput = {
   id?: string
   name: string
-  description?: string | null
-  isPublic?: boolean
   lastMessageAt?: Date | string | null
   createdAt?: Date | string
+  expiresAt: Date | string
   creator: Prisma.UserCreateNestedOneWithoutCreatorInput
-  members?: Prisma.ChannelMemberCreateNestedManyWithoutChannelInput
   messages?: Prisma.ChannelMessageCreateNestedManyWithoutChannelInput
+  blocked?: Prisma.ChannelBlockedCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateInput = {
   id?: string
   name: string
-  description?: string | null
-  isPublic?: boolean
   creatorId: string
   lastMessageAt?: Date | string | null
   createdAt?: Date | string
-  members?: Prisma.ChannelMemberUncheckedCreateNestedManyWithoutChannelInput
+  expiresAt: Date | string
   messages?: Prisma.ChannelMessageUncheckedCreateNestedManyWithoutChannelInput
+  blocked?: Prisma.ChannelBlockedUncheckedCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   creator?: Prisma.UserUpdateOneRequiredWithoutCreatorNestedInput
-  members?: Prisma.ChannelMemberUpdateManyWithoutChannelNestedInput
   messages?: Prisma.ChannelMessageUpdateManyWithoutChannelNestedInput
+  blocked?: Prisma.ChannelBlockedUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   creatorId?: Prisma.StringFieldUpdateOperationsInput | string
   lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  members?: Prisma.ChannelMemberUncheckedUpdateManyWithoutChannelNestedInput
+  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   messages?: Prisma.ChannelMessageUncheckedUpdateManyWithoutChannelNestedInput
+  blocked?: Prisma.ChannelBlockedUncheckedUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelCreateManyInput = {
   id?: string
   name: string
-  description?: string | null
-  isPublic?: boolean
   creatorId: string
   lastMessageAt?: Date | string | null
   createdAt?: Date | string
+  expiresAt: Date | string
 }
 
 export type ChannelUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ChannelUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   creatorId?: Prisma.StringFieldUpdateOperationsInput | string
   lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type ChannelListRelationFilter = {
@@ -348,31 +329,28 @@ export type ChannelOrderByRelationAggregateInput = {
 export type ChannelCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  description?: Prisma.SortOrder
-  isPublic?: Prisma.SortOrder
   creatorId?: Prisma.SortOrder
   lastMessageAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  expiresAt?: Prisma.SortOrder
 }
 
 export type ChannelMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  description?: Prisma.SortOrder
-  isPublic?: Prisma.SortOrder
   creatorId?: Prisma.SortOrder
   lastMessageAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  expiresAt?: Prisma.SortOrder
 }
 
 export type ChannelMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
-  description?: Prisma.SortOrder
-  isPublic?: Prisma.SortOrder
   creatorId?: Prisma.SortOrder
   lastMessageAt?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
+  expiresAt?: Prisma.SortOrder
 }
 
 export type ChannelScalarRelationFilter = {
@@ -422,20 +400,6 @@ export type ChannelUncheckedUpdateManyWithoutCreatorNestedInput = {
   deleteMany?: Prisma.ChannelScalarWhereInput | Prisma.ChannelScalarWhereInput[]
 }
 
-export type ChannelCreateNestedOneWithoutMembersInput = {
-  create?: Prisma.XOR<Prisma.ChannelCreateWithoutMembersInput, Prisma.ChannelUncheckedCreateWithoutMembersInput>
-  connectOrCreate?: Prisma.ChannelCreateOrConnectWithoutMembersInput
-  connect?: Prisma.ChannelWhereUniqueInput
-}
-
-export type ChannelUpdateOneRequiredWithoutMembersNestedInput = {
-  create?: Prisma.XOR<Prisma.ChannelCreateWithoutMembersInput, Prisma.ChannelUncheckedCreateWithoutMembersInput>
-  connectOrCreate?: Prisma.ChannelCreateOrConnectWithoutMembersInput
-  upsert?: Prisma.ChannelUpsertWithoutMembersInput
-  connect?: Prisma.ChannelWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.ChannelUpdateToOneWithWhereWithoutMembersInput, Prisma.ChannelUpdateWithoutMembersInput>, Prisma.ChannelUncheckedUpdateWithoutMembersInput>
-}
-
 export type ChannelCreateNestedOneWithoutMessagesInput = {
   create?: Prisma.XOR<Prisma.ChannelCreateWithoutMessagesInput, Prisma.ChannelUncheckedCreateWithoutMessagesInput>
   connectOrCreate?: Prisma.ChannelCreateOrConnectWithoutMessagesInput
@@ -450,26 +414,38 @@ export type ChannelUpdateOneRequiredWithoutMessagesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ChannelUpdateToOneWithWhereWithoutMessagesInput, Prisma.ChannelUpdateWithoutMessagesInput>, Prisma.ChannelUncheckedUpdateWithoutMessagesInput>
 }
 
+export type ChannelCreateNestedOneWithoutBlockedInput = {
+  create?: Prisma.XOR<Prisma.ChannelCreateWithoutBlockedInput, Prisma.ChannelUncheckedCreateWithoutBlockedInput>
+  connectOrCreate?: Prisma.ChannelCreateOrConnectWithoutBlockedInput
+  connect?: Prisma.ChannelWhereUniqueInput
+}
+
+export type ChannelUpdateOneRequiredWithoutBlockedNestedInput = {
+  create?: Prisma.XOR<Prisma.ChannelCreateWithoutBlockedInput, Prisma.ChannelUncheckedCreateWithoutBlockedInput>
+  connectOrCreate?: Prisma.ChannelCreateOrConnectWithoutBlockedInput
+  upsert?: Prisma.ChannelUpsertWithoutBlockedInput
+  connect?: Prisma.ChannelWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ChannelUpdateToOneWithWhereWithoutBlockedInput, Prisma.ChannelUpdateWithoutBlockedInput>, Prisma.ChannelUncheckedUpdateWithoutBlockedInput>
+}
+
 export type ChannelCreateWithoutCreatorInput = {
   id?: string
   name: string
-  description?: string | null
-  isPublic?: boolean
   lastMessageAt?: Date | string | null
   createdAt?: Date | string
-  members?: Prisma.ChannelMemberCreateNestedManyWithoutChannelInput
+  expiresAt: Date | string
   messages?: Prisma.ChannelMessageCreateNestedManyWithoutChannelInput
+  blocked?: Prisma.ChannelBlockedCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutCreatorInput = {
   id?: string
   name: string
-  description?: string | null
-  isPublic?: boolean
   lastMessageAt?: Date | string | null
   createdAt?: Date | string
-  members?: Prisma.ChannelMemberUncheckedCreateNestedManyWithoutChannelInput
+  expiresAt: Date | string
   messages?: Prisma.ChannelMessageUncheckedCreateNestedManyWithoutChannelInput
+  blocked?: Prisma.ChannelBlockedUncheckedCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutCreatorInput = {
@@ -504,93 +480,30 @@ export type ChannelScalarWhereInput = {
   NOT?: Prisma.ChannelScalarWhereInput | Prisma.ChannelScalarWhereInput[]
   id?: Prisma.StringFilter<"Channel"> | string
   name?: Prisma.StringFilter<"Channel"> | string
-  description?: Prisma.StringNullableFilter<"Channel"> | string | null
-  isPublic?: Prisma.BoolFilter<"Channel"> | boolean
   creatorId?: Prisma.StringFilter<"Channel"> | string
   lastMessageAt?: Prisma.DateTimeNullableFilter<"Channel"> | Date | string | null
   createdAt?: Prisma.DateTimeFilter<"Channel"> | Date | string
-}
-
-export type ChannelCreateWithoutMembersInput = {
-  id?: string
-  name: string
-  description?: string | null
-  isPublic?: boolean
-  lastMessageAt?: Date | string | null
-  createdAt?: Date | string
-  creator: Prisma.UserCreateNestedOneWithoutCreatorInput
-  messages?: Prisma.ChannelMessageCreateNestedManyWithoutChannelInput
-}
-
-export type ChannelUncheckedCreateWithoutMembersInput = {
-  id?: string
-  name: string
-  description?: string | null
-  isPublic?: boolean
-  creatorId: string
-  lastMessageAt?: Date | string | null
-  createdAt?: Date | string
-  messages?: Prisma.ChannelMessageUncheckedCreateNestedManyWithoutChannelInput
-}
-
-export type ChannelCreateOrConnectWithoutMembersInput = {
-  where: Prisma.ChannelWhereUniqueInput
-  create: Prisma.XOR<Prisma.ChannelCreateWithoutMembersInput, Prisma.ChannelUncheckedCreateWithoutMembersInput>
-}
-
-export type ChannelUpsertWithoutMembersInput = {
-  update: Prisma.XOR<Prisma.ChannelUpdateWithoutMembersInput, Prisma.ChannelUncheckedUpdateWithoutMembersInput>
-  create: Prisma.XOR<Prisma.ChannelCreateWithoutMembersInput, Prisma.ChannelUncheckedCreateWithoutMembersInput>
-  where?: Prisma.ChannelWhereInput
-}
-
-export type ChannelUpdateToOneWithWhereWithoutMembersInput = {
-  where?: Prisma.ChannelWhereInput
-  data: Prisma.XOR<Prisma.ChannelUpdateWithoutMembersInput, Prisma.ChannelUncheckedUpdateWithoutMembersInput>
-}
-
-export type ChannelUpdateWithoutMembersInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  creator?: Prisma.UserUpdateOneRequiredWithoutCreatorNestedInput
-  messages?: Prisma.ChannelMessageUpdateManyWithoutChannelNestedInput
-}
-
-export type ChannelUncheckedUpdateWithoutMembersInput = {
-  id?: Prisma.StringFieldUpdateOperationsInput | string
-  name?: Prisma.StringFieldUpdateOperationsInput | string
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  creatorId?: Prisma.StringFieldUpdateOperationsInput | string
-  lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  messages?: Prisma.ChannelMessageUncheckedUpdateManyWithoutChannelNestedInput
+  expiresAt?: Prisma.DateTimeFilter<"Channel"> | Date | string
 }
 
 export type ChannelCreateWithoutMessagesInput = {
   id?: string
   name: string
-  description?: string | null
-  isPublic?: boolean
   lastMessageAt?: Date | string | null
   createdAt?: Date | string
+  expiresAt: Date | string
   creator: Prisma.UserCreateNestedOneWithoutCreatorInput
-  members?: Prisma.ChannelMemberCreateNestedManyWithoutChannelInput
+  blocked?: Prisma.ChannelBlockedCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelUncheckedCreateWithoutMessagesInput = {
   id?: string
   name: string
-  description?: string | null
-  isPublic?: boolean
   creatorId: string
   lastMessageAt?: Date | string | null
   createdAt?: Date | string
-  members?: Prisma.ChannelMemberUncheckedCreateNestedManyWithoutChannelInput
+  expiresAt: Date | string
+  blocked?: Prisma.ChannelBlockedUncheckedCreateNestedManyWithoutChannelInput
 }
 
 export type ChannelCreateOrConnectWithoutMessagesInput = {
@@ -612,63 +525,113 @@ export type ChannelUpdateToOneWithWhereWithoutMessagesInput = {
 export type ChannelUpdateWithoutMessagesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   creator?: Prisma.UserUpdateOneRequiredWithoutCreatorNestedInput
-  members?: Prisma.ChannelMemberUpdateManyWithoutChannelNestedInput
+  blocked?: Prisma.ChannelBlockedUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutMessagesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   creatorId?: Prisma.StringFieldUpdateOperationsInput | string
   lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  members?: Prisma.ChannelMemberUncheckedUpdateManyWithoutChannelNestedInput
+  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  blocked?: Prisma.ChannelBlockedUncheckedUpdateManyWithoutChannelNestedInput
+}
+
+export type ChannelCreateWithoutBlockedInput = {
+  id?: string
+  name: string
+  lastMessageAt?: Date | string | null
+  createdAt?: Date | string
+  expiresAt: Date | string
+  creator: Prisma.UserCreateNestedOneWithoutCreatorInput
+  messages?: Prisma.ChannelMessageCreateNestedManyWithoutChannelInput
+}
+
+export type ChannelUncheckedCreateWithoutBlockedInput = {
+  id?: string
+  name: string
+  creatorId: string
+  lastMessageAt?: Date | string | null
+  createdAt?: Date | string
+  expiresAt: Date | string
+  messages?: Prisma.ChannelMessageUncheckedCreateNestedManyWithoutChannelInput
+}
+
+export type ChannelCreateOrConnectWithoutBlockedInput = {
+  where: Prisma.ChannelWhereUniqueInput
+  create: Prisma.XOR<Prisma.ChannelCreateWithoutBlockedInput, Prisma.ChannelUncheckedCreateWithoutBlockedInput>
+}
+
+export type ChannelUpsertWithoutBlockedInput = {
+  update: Prisma.XOR<Prisma.ChannelUpdateWithoutBlockedInput, Prisma.ChannelUncheckedUpdateWithoutBlockedInput>
+  create: Prisma.XOR<Prisma.ChannelCreateWithoutBlockedInput, Prisma.ChannelUncheckedCreateWithoutBlockedInput>
+  where?: Prisma.ChannelWhereInput
+}
+
+export type ChannelUpdateToOneWithWhereWithoutBlockedInput = {
+  where?: Prisma.ChannelWhereInput
+  data: Prisma.XOR<Prisma.ChannelUpdateWithoutBlockedInput, Prisma.ChannelUncheckedUpdateWithoutBlockedInput>
+}
+
+export type ChannelUpdateWithoutBlockedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  creator?: Prisma.UserUpdateOneRequiredWithoutCreatorNestedInput
+  messages?: Prisma.ChannelMessageUpdateManyWithoutChannelNestedInput
+}
+
+export type ChannelUncheckedUpdateWithoutBlockedInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  creatorId?: Prisma.StringFieldUpdateOperationsInput | string
+  lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  messages?: Prisma.ChannelMessageUncheckedUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelCreateManyCreatorInput = {
   id?: string
   name: string
-  description?: string | null
-  isPublic?: boolean
   lastMessageAt?: Date | string | null
   createdAt?: Date | string
+  expiresAt: Date | string
 }
 
 export type ChannelUpdateWithoutCreatorInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  members?: Prisma.ChannelMemberUpdateManyWithoutChannelNestedInput
+  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   messages?: Prisma.ChannelMessageUpdateManyWithoutChannelNestedInput
+  blocked?: Prisma.ChannelBlockedUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateWithoutCreatorInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  members?: Prisma.ChannelMemberUncheckedUpdateManyWithoutChannelNestedInput
+  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   messages?: Prisma.ChannelMessageUncheckedUpdateManyWithoutChannelNestedInput
+  blocked?: Prisma.ChannelBlockedUncheckedUpdateManyWithoutChannelNestedInput
 }
 
 export type ChannelUncheckedUpdateManyWithoutCreatorInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
-  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  isPublic?: Prisma.BoolFieldUpdateOperationsInput | boolean
   lastMessageAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -677,13 +640,13 @@ export type ChannelUncheckedUpdateManyWithoutCreatorInput = {
  */
 
 export type ChannelCountOutputType = {
-  members: number
   messages: number
+  blocked: number
 }
 
 export type ChannelCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  members?: boolean | ChannelCountOutputTypeCountMembersArgs
   messages?: boolean | ChannelCountOutputTypeCountMessagesArgs
+  blocked?: boolean | ChannelCountOutputTypeCountBlockedArgs
 }
 
 /**
@@ -699,69 +662,65 @@ export type ChannelCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Exte
 /**
  * ChannelCountOutputType without action
  */
-export type ChannelCountOutputTypeCountMembersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.ChannelMemberWhereInput
+export type ChannelCountOutputTypeCountMessagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ChannelMessageWhereInput
 }
 
 /**
  * ChannelCountOutputType without action
  */
-export type ChannelCountOutputTypeCountMessagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.ChannelMessageWhereInput
+export type ChannelCountOutputTypeCountBlockedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ChannelBlockedWhereInput
 }
 
 
 export type ChannelSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
-  description?: boolean
-  isPublic?: boolean
   creatorId?: boolean
   lastMessageAt?: boolean
   createdAt?: boolean
+  expiresAt?: boolean
   creator?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  members?: boolean | Prisma.Channel$membersArgs<ExtArgs>
   messages?: boolean | Prisma.Channel$messagesArgs<ExtArgs>
+  blocked?: boolean | Prisma.Channel$blockedArgs<ExtArgs>
   _count?: boolean | Prisma.ChannelCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["channel"]>
 
 export type ChannelSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
-  description?: boolean
-  isPublic?: boolean
   creatorId?: boolean
   lastMessageAt?: boolean
   createdAt?: boolean
+  expiresAt?: boolean
   creator?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["channel"]>
 
 export type ChannelSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
-  description?: boolean
-  isPublic?: boolean
   creatorId?: boolean
   lastMessageAt?: boolean
   createdAt?: boolean
+  expiresAt?: boolean
   creator?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["channel"]>
 
 export type ChannelSelectScalar = {
   id?: boolean
   name?: boolean
-  description?: boolean
-  isPublic?: boolean
   creatorId?: boolean
   lastMessageAt?: boolean
   createdAt?: boolean
+  expiresAt?: boolean
 }
 
-export type ChannelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "description" | "isPublic" | "creatorId" | "lastMessageAt" | "createdAt", ExtArgs["result"]["channel"]>
+export type ChannelOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "creatorId" | "lastMessageAt" | "createdAt" | "expiresAt", ExtArgs["result"]["channel"]>
 export type ChannelInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   creator?: boolean | Prisma.UserDefaultArgs<ExtArgs>
-  members?: boolean | Prisma.Channel$membersArgs<ExtArgs>
   messages?: boolean | Prisma.Channel$messagesArgs<ExtArgs>
+  blocked?: boolean | Prisma.Channel$blockedArgs<ExtArgs>
   _count?: boolean | Prisma.ChannelCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ChannelIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -775,17 +734,16 @@ export type $ChannelPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
   name: "Channel"
   objects: {
     creator: Prisma.$UserPayload<ExtArgs>
-    members: Prisma.$ChannelMemberPayload<ExtArgs>[]
     messages: Prisma.$ChannelMessagePayload<ExtArgs>[]
+    blocked: Prisma.$ChannelBlockedPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     name: string
-    description: string | null
-    isPublic: boolean
     creatorId: string
     lastMessageAt: Date | null
     createdAt: Date
+    expiresAt: Date
   }, ExtArgs["result"]["channel"]>
   composites: {}
 }
@@ -1181,8 +1139,8 @@ readonly fields: ChannelFieldRefs;
 export interface Prisma__ChannelClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   creator<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  members<T extends Prisma.Channel$membersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Channel$membersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChannelMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   messages<T extends Prisma.Channel$messagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Channel$messagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChannelMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  blocked<T extends Prisma.Channel$blockedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Channel$blockedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ChannelBlockedPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1214,11 +1172,10 @@ export interface Prisma__ChannelClient<T, Null = never, ExtArgs extends runtime.
 export interface ChannelFieldRefs {
   readonly id: Prisma.FieldRef<"Channel", 'String'>
   readonly name: Prisma.FieldRef<"Channel", 'String'>
-  readonly description: Prisma.FieldRef<"Channel", 'String'>
-  readonly isPublic: Prisma.FieldRef<"Channel", 'Boolean'>
   readonly creatorId: Prisma.FieldRef<"Channel", 'String'>
   readonly lastMessageAt: Prisma.FieldRef<"Channel", 'DateTime'>
   readonly createdAt: Prisma.FieldRef<"Channel", 'DateTime'>
+  readonly expiresAt: Prisma.FieldRef<"Channel", 'DateTime'>
 }
     
 
@@ -1615,30 +1572,6 @@ export type ChannelDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Inter
 }
 
 /**
- * Channel.members
- */
-export type Channel$membersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the ChannelMember
-   */
-  select?: Prisma.ChannelMemberSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the ChannelMember
-   */
-  omit?: Prisma.ChannelMemberOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ChannelMemberInclude<ExtArgs> | null
-  where?: Prisma.ChannelMemberWhereInput
-  orderBy?: Prisma.ChannelMemberOrderByWithRelationInput | Prisma.ChannelMemberOrderByWithRelationInput[]
-  cursor?: Prisma.ChannelMemberWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.ChannelMemberScalarFieldEnum | Prisma.ChannelMemberScalarFieldEnum[]
-}
-
-/**
  * Channel.messages
  */
 export type Channel$messagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1660,6 +1593,30 @@ export type Channel$messagesArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   distinct?: Prisma.ChannelMessageScalarFieldEnum | Prisma.ChannelMessageScalarFieldEnum[]
+}
+
+/**
+ * Channel.blocked
+ */
+export type Channel$blockedArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ChannelBlocked
+   */
+  select?: Prisma.ChannelBlockedSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ChannelBlocked
+   */
+  omit?: Prisma.ChannelBlockedOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ChannelBlockedInclude<ExtArgs> | null
+  where?: Prisma.ChannelBlockedWhereInput
+  orderBy?: Prisma.ChannelBlockedOrderByWithRelationInput | Prisma.ChannelBlockedOrderByWithRelationInput[]
+  cursor?: Prisma.ChannelBlockedWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ChannelBlockedScalarFieldEnum | Prisma.ChannelBlockedScalarFieldEnum[]
 }
 
 /**

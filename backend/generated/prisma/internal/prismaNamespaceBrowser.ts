@@ -65,8 +65,8 @@ export const ModelName = {
   ConversationMember: 'ConversationMember',
   Message: 'Message',
   Channel: 'Channel',
-  ChannelMember: 'ChannelMember',
-  ChannelMessage: 'ChannelMessage'
+  ChannelMessage: 'ChannelMessage',
+  ChannelBlocked: 'ChannelBlocked'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -94,7 +94,8 @@ export const UserScalarFieldEnum = {
   bio: 'bio',
   image: 'image',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  lastChannelCreatedAt: 'lastChannelCreatedAt'
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
@@ -230,24 +231,13 @@ export type MessageScalarFieldEnum = (typeof MessageScalarFieldEnum)[keyof typeo
 export const ChannelScalarFieldEnum = {
   id: 'id',
   name: 'name',
-  description: 'description',
-  isPublic: 'isPublic',
   creatorId: 'creatorId',
   lastMessageAt: 'lastMessageAt',
-  createdAt: 'createdAt'
+  createdAt: 'createdAt',
+  expiresAt: 'expiresAt'
 } as const
 
 export type ChannelScalarFieldEnum = (typeof ChannelScalarFieldEnum)[keyof typeof ChannelScalarFieldEnum]
-
-
-export const ChannelMemberScalarFieldEnum = {
-  id: 'id',
-  userId: 'userId',
-  channelId: 'channelId',
-  role: 'role'
-} as const
-
-export type ChannelMemberScalarFieldEnum = (typeof ChannelMemberScalarFieldEnum)[keyof typeof ChannelMemberScalarFieldEnum]
 
 
 export const ChannelMessageScalarFieldEnum = {
@@ -256,11 +246,20 @@ export const ChannelMessageScalarFieldEnum = {
   senderId: 'senderId',
   channelId: 'channelId',
   isDeleted: 'isDeleted',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  createdAt: 'createdAt'
 } as const
 
 export type ChannelMessageScalarFieldEnum = (typeof ChannelMessageScalarFieldEnum)[keyof typeof ChannelMessageScalarFieldEnum]
+
+
+export const ChannelBlockedScalarFieldEnum = {
+  id: 'id',
+  channelId: 'channelId',
+  userId: 'userId',
+  createdAt: 'createdAt'
+} as const
+
+export type ChannelBlockedScalarFieldEnum = (typeof ChannelBlockedScalarFieldEnum)[keyof typeof ChannelBlockedScalarFieldEnum]
 
 
 export const SortOrder = {
