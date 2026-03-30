@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import api from "@/app/lib/axios";
 import Image from "next/image";
 import { useAuthStore } from "@/app/store/authStore";
+import { initSocket } from "@/app/lib/socket";
 
 type Message = {
   id: string;
@@ -24,6 +25,13 @@ type Participant = {
   image?: string;
 };
 
+type RawParticipant = {
+  id: string;
+  userId: string;
+  conversationId: string;
+  user: Participant;
+};
+
 export default function ChatPage() {
   const params = useParams();
   const conversationId = params.conversationId as string;
@@ -36,11 +44,56 @@ export default function ChatPage() {
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  // ✅ Single consolidated socket effect
   useEffect(() => {
+    if (!user || !conversationId) return;
+
+    const socket = initSocket();
+    if (!socket) return;
+
+    socket.emit("join_conversation", conversationId);
+
+    const handleMessage = (message: Message) => {
+      setMessages((prev) => {
+        const exists = prev.some((m) => m.id === message.id);
+        if (exists) return prev;
+        return [...prev, message];
+      });
+    };
+
+    const handleDelete = ({ messageId }: { messageId: string }) => {
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === messageId
+            ? { ...m, content: "This message was deleted", isDeleted: true }
+            : m
+        )
+      );
+    };
+
+    socket.on("receive_message", handleMessage);
+    socket.on("message_deleted", handleDelete);
+
+    return () => {
+      socket.emit("leave_conversation", conversationId);
+      socket.off("receive_message", handleMessage);
+      socket.off("message_deleted", handleDelete);
+    };
+  }, [user, conversationId]);
+
+  useEffect(() => {
+    if (!conversationId) return;
+
     const fetchMessages = async () => {
-      const res = await api.get(`/message/${conversationId}`);
-      setMessages(res.data.messages);
-      setParticipants(res.data.participants);
+      try {
+        const res = await api.get(`/message/${conversationId}`);
+        setMessages(res.data.messages);
+        setParticipants(
+          res.data.participants.map((p: RawParticipant) => p.user)
+        );
+      } catch (error) {
+        console.error("Failed to fetch messages:", error);
+      }
     };
 
     fetchMessages();
@@ -50,43 +103,41 @@ export default function ChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-const otherUser = useMemo(() => {
-  if (!user || !participants.length) return undefined;
-
-  return participants.find((p) => p.id !== user.id);
-}, [participants, user]);
+  const otherUser = useMemo(() => {
+    if (!user || !participants.length) return undefined;
+    return participants.find((p) => p.id !== user.id);
+  }, [participants, user]);
 
   const sendMessage = async () => {
     if (!text.trim()) return;
-
-    const res = await api.post("/message/send", {
-      conversationId,
-      content: text,
-    });
-
-    setMessages((prev) => [...prev, res.data]);
-    setText("");
+    try {
+      await api.post("/message/send", {
+        conversationId,
+        content: text,
+      });
+      setText("");
+    } catch (error) {
+      console.error("Failed to send message:", error);
+    }
   };
 
   const deleteMessage = async (messageId: string) => {
     try {
       await api.patch(`/message/${messageId}`);
-
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === messageId
-            ? { ...m, content: "This message was deleted", isDeleted: true }
-            : m,
-        ),
-      );
     } catch (error) {
-      console.error("Failed to delete message");
+      console.error("Failed to delete message:", error);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
     }
   };
 
   const formatTime = (date: string) => {
-    const d = new Date(date);
-    return d.toLocaleTimeString([], {
+    return new Date(date).toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
     });
@@ -102,11 +153,10 @@ const otherUser = useMemo(() => {
           backdropFilter: "blur(20px)",
         }}
       >
+        {/* Header */}
         <div
           className="flex items-center gap-3 px-5 py-3"
-          style={{
-            borderBottom: "1px solid rgba(224,86,164,0.18)",
-          }}
+          style={{ borderBottom: "1px solid rgba(224,86,164,0.18)" }}
         >
           {otherUser?.image ? (
             <div className="w-9 h-9 rounded-full overflow-hidden">
@@ -123,12 +173,10 @@ const otherUser = useMemo(() => {
               {otherUser?.username?.[0]?.toUpperCase() || "?"}
             </div>
           )}
-
           <div className="flex flex-col">
             <p className="text-[14px] font-semibold text-black tracking-tight">
               {otherUser?.username || "Chat"}
             </p>
-
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
               <span className="text-[11px] text-pink-300">Active now</span>
@@ -136,10 +184,10 @@ const otherUser = useMemo(() => {
           </div>
         </div>
 
+        {/* Messages */}
         <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-4">
           {messages.map((m) => {
             const isMe = m.sender.id === user?.id;
-
             return (
               <div
                 key={m.id}
@@ -176,36 +224,21 @@ const otherUser = useMemo(() => {
                       }}
                     >
                       {m.isDeleted ? (
-                        <i className="text-gray-100">
-                          This message was deleted
-                        </i>
+                        <i className="text-gray-300">This message was deleted</i>
                       ) : (
                         m.content
                       )}
 
-                     {isMe && !m.isDeleted && (
-  <div
-    className="
-      absolute -top-6 right-0
-      opacity-0 group-hover:opacity-100
-      transition-all duration-200
-    "
-  >
-    <button
-      onClick={() => deleteMessage(m.id)}
-      className="
-        px-3 py-1 rounded-lg text-[11px] font-medium
-        bg-white text-[#E056A4]
-        border border-[#E056A4]/30
-        shadow-sm
-        hover:bg-[#E056A4] hover:text-white
-        transition-all duration-200
-      "
-    >
-      Unsend
-    </button>
-  </div>
-)}
+                      {isMe && !m.isDeleted && (
+                        <div className="absolute -top-6 right-0 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                          <button
+                            onClick={() => deleteMessage(m.id)}
+                            className="px-3 py-1 rounded-lg text-[11px] font-medium bg-white text-[#E056A4] border border-[#E056A4]/30 shadow-sm hover:bg-[#E056A4] hover:text-white transition-all duration-200"
+                          >
+                            Unsend
+                          </button>
+                        </div>
+                      )}
                     </div>
 
                     <span
@@ -220,19 +253,18 @@ const otherUser = useMemo(() => {
               </div>
             );
           })}
-
           <div ref={bottomRef} />
         </div>
 
+        {/* Input */}
         <div
           className="p-4 flex gap-3 items-center"
-          style={{
-            borderTop: "1px solid rgba(224,86,164,0.18)",
-          }}
+          style={{ borderTop: "1px solid rgba(224,86,164,0.18)" }}
         >
           <input
             value={text}
             onChange={(e) => setText(e.target.value)}
+            onKeyDown={handleKeyDown}
             placeholder="Type a message..."
             className="flex-1 px-4 py-2 rounded-xl outline-none text-sm"
             style={{
@@ -240,17 +272,10 @@ const otherUser = useMemo(() => {
               border: "1px solid rgba(224,86,164,0.3)",
             }}
           />
-
           <button
             onClick={sendMessage}
-            className="
-              px-5 py-2 rounded-xl text-sm font-medium
-              bg-[#E056A4] text-white transition
-              hover:bg-white hover:text-[#E056A4]
-            "
-            style={{
-              border: "1px solid #E056A4",
-            }}
+            className="px-5 py-2 rounded-xl text-sm font-medium bg-[#E056A4] text-white transition hover:bg-white hover:text-[#E056A4]"
+            style={{ border: "1px solid #E056A4" }}
           >
             Send
           </button>

@@ -62,7 +62,6 @@ export default function TrendingHashtags() {
         border: "1px solid rgba(248,220,234,0.3)",
       }}
     >
-      {/* Header */}
       <div className="px-4 pt-4 pb-3 flex items-center gap-2.5">
         <span
           className="w-7 h-7 rounded-lg flex items-center justify-center text-[13px] font-bold text-white"
@@ -79,7 +78,6 @@ export default function TrendingHashtags() {
         </div>
       </div>
 
-      {/* Clear filter */}
       {selectedTag && (
         <div className="px-4 pb-2">
           <button
@@ -91,7 +89,6 @@ export default function TrendingHashtags() {
         </div>
       )}
 
-      {/* Hashtags */}
       <div className="flex flex-col py-2">
         {hashtags.map(({ tag, count }, i) => {
           const isHovered = hovered === tag;

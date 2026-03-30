@@ -17,7 +17,7 @@ export default function MyProfilePage() {
     user ? s.profilesById[user.id] : undefined
   );
 
-  const ensureProfile = useProfileStore((s) => s.ensureProfile);
+  const fetchProfile = useProfileStore((s) => s.fetchProfile);
   const ensureProfilePosts = usePostStore((s) => s.ensureProfilePosts);
   const ensureSavedPosts = usePostStore((s) => s.ensureSavedPosts);
 
@@ -42,11 +42,11 @@ export default function MyProfilePage() {
   useEffect(() => {
     if (!user) return;
 
-    ensureProfile(user.id);
+    fetchProfile(user.id);
     ensureProfilePosts(user.id);
     ensureSavedPosts();
 
-  }, [user, ensureProfile, ensureProfilePosts, ensureSavedPosts]);
+  }, [user, fetchProfile, ensureProfilePosts, ensureSavedPosts]);
 
 
   if (!profile) {

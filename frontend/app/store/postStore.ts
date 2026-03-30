@@ -4,6 +4,7 @@ import { PostComment } from "../types/comment";
 import api from "../lib/axios";
 import { getSocket } from "../lib/socket";
 import { useNotificationStore } from "./notificationStore";
+import { useAuthStore } from "./authStore";
 
 const unique = (arr: string[]) => Array.from(new Set(arr));
 
@@ -400,7 +401,7 @@ export const usePostStore = create<PostState>((set, get) => ({
   if (!post) return;
 
   const tempId = `temp-${Date.now()}`;
-  const { user } = await import("./authStore").then((m) => ({ user: m.useAuthStore.getState().user }));
+  const user = useAuthStore.getState().user;
 
 const optimisticComment: PostComment = {
   id: tempId,

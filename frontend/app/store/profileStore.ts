@@ -15,7 +15,6 @@ interface ProfileState {
   loading: boolean;
 
   fetchProfile: (id: string) => Promise<void>;
-  ensureProfile: (id: string) => Promise<void>;
 
   setFeaturedProfiles: (profiles: Profile[]) => void;
 
@@ -29,7 +28,7 @@ interface ProfileState {
   clearProfiles: () => void;
 }
 
-export const useProfileStore = create<ProfileState>((set, get) => ({
+export const useProfileStore = create<ProfileState>((set) => ({
   profilesById: {},
   loading: false,
   featuredIds: [],
@@ -54,15 +53,6 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     } finally {
       set({ loading: false });
     }
-  },
-
-  ensureProfile: async (id) => {
-    const state = get();
-    const existing = state.profilesById[id];
-
-    if (existing && existing.bio !== undefined) return;
-
-    await state.fetchProfile(id);
   },
 
   setFeaturedProfiles: (profiles) =>

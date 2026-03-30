@@ -51,7 +51,6 @@ export default function SupportChat() {
         boxShadow: "0 4px 30px rgba(0,0,0,0.1)",
       }}
     >
-      {/* Header */}
       <button
         onClick={() => setOpen((o) => !o)}
         className="w-full flex items-center gap-2.5 px-3.5 py-3 cursor-pointer"
@@ -82,7 +81,6 @@ export default function SupportChat() {
 
       {open && (
         <>
-          {/* Messages */}
           <div className="flex flex-col gap-2 px-3 pb-2 flex-1 overflow-y-auto no-scrollbar">
             {messages.map((m, i) => (
               <div
@@ -119,7 +117,6 @@ export default function SupportChat() {
             <div ref={bottomRef} />
           </div>
 
-          {/* Input */}
           <div className="flex gap-2 px-3 pb-3 pt-2 border-t border-pink-200">
             <input
               value={input}
