@@ -44,7 +44,6 @@ export default function ChatPage() {
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  // ✅ Single consolidated socket effect
   useEffect(() => {
     if (!user || !conversationId) return;
 
