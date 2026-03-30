@@ -12,20 +12,26 @@ export const initSocket = (server: HttpServer) => {
     },
   });
 
-  io.on("connection", (socket) => {
-    const userId = socket.handshake.auth.userId;
+io.on("connection", (socket) => {
+  const userId = socket.handshake.auth.userId;
 
-    console.log("User connected:", socket.id, "userId:", userId);
+  if (userId) {
+    socket.join(`user:${userId}`);
+  }
 
-    if (userId) {
-      socket.join(`user:${userId}`);
-      console.log("Joined room:", `user:${userId}`);
-    }
-
-    socket.on("disconnect", () => {
-      console.log("Disconnected:", socket.id);
-    });
+  socket.on("join_conversation", (conversationId: string) => {
+    socket.join(`conversation:${conversationId}`);
   });
+
+  socket.on("join_channel", (channelId: string) => {
+    socket.join(`channel:${channelId}`);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Disconnected:", socket.id);
+  });
+});
+
 };
 
 export const getIO = () => {

@@ -8,11 +8,11 @@ export const createChannel = async (req: Request, res: Response) => {
   const { name } = req.body;
 
   if (!userId) {
-    return res.status(401).json({ message: "Unauthorized" });
+    return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unauthorized" });
   }
 
   if (!name || !name.trim()) {
-    return res.status(400).json({ message: "Channel name required" });
+    return res.status(StatusCodes.NOT_FOUND).json({ message: "Channel name required" });
   }
 
   const now = new Date();
@@ -30,7 +30,7 @@ export const createChannel = async (req: Request, res: Response) => {
     user?.lastChannelCreatedAt &&
     user.lastChannelCreatedAt >= fourteenDaysAgo
   ) {
-    return res.status(403).json({
+    return res.status(StatusCodes.NOT_FOUND).json({
       message: "You can create only one channel every 14 days",
     });
   }
@@ -73,10 +73,10 @@ export const createChannel = async (req: Request, res: Response) => {
       return newChannel;
     });
 
-    return res.status(201).json(channel);
+    return res.status(StatusCodes.CREATED).json(channel);
 
   } catch (err: any) {
-    return res.status(400).json({
+    return res.status(StatusCodes.BAD_REQUEST).json({
       message: err.message || "Failed to create channel",
     });
   }
@@ -99,7 +99,7 @@ export const deleteChannel = async (req: Request, res: Response) => {
   });
 
     if (!channel) {
-    return res.status(404).json({ message: "Channel not found" });
+    return res.status(StatusCodes.NOT_FOUND).json({ message: "Channel not found" });
   }
 
   if(channel.creatorId !== userId) return res.status(StatusCodes.FORBIDDEN).json({ message: "Only channel owner can delete" });
@@ -116,11 +116,11 @@ export const blockUserInChannel = async (req: Request, res: Response) => {
   const { channelId, userId } = req.body;
 
   if (!adminId) {
-    return res.status(401).json({ message: "Unauthorized" });
+    return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unauthorized" });
   }
 
   if (!channelId || !userId) {
-    return res.status(400).json({ message: "Missing fields" });
+    return res.status(StatusCodes.BAD_REQUEST).json({ message: "Missing fields" });
   }
 
   const channel = await prisma.channel.findUnique({
@@ -129,15 +129,15 @@ export const blockUserInChannel = async (req: Request, res: Response) => {
   });
 
   if (!channel) {
-    return res.status(404).json({ message: "Channel not found" });
+    return res.status(StatusCodes.NOT_FOUND).json({ message: "Channel not found" });
   }
 
   if (channel.creatorId !== adminId) {
-    return res.status(403).json({ message: "Not allowed" });
+    return res.status(StatusCodes.FORBIDDEN).json({ message: "Not allowed" });
   }
 
   if (adminId === userId) {
-    return res.status(400).json({ message: "Cannot block yourself" });
+    return res.status(StatusCodes.BAD_REQUEST).json({ message: "Cannot block yourself" });
   }
 
   try {
@@ -148,7 +148,7 @@ export const blockUserInChannel = async (req: Request, res: Response) => {
       },
     });
 
-    return res.status(201).json({
+    return res.status(StatusCodes.CREATED).json({
       message: "User blocked successfully",
       blocked,
     });
@@ -165,7 +165,7 @@ export const unblockUserInChannel = async (req: Request, res: Response) => {
   const { channelId, userId } = req.body;
 
   if (!adminId) {
-    return res.status(401).json({ message: "Unauthorized" });
+    return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unauthorized" });
   }
 
   const channel = await prisma.channel.findUnique({
@@ -174,7 +174,7 @@ export const unblockUserInChannel = async (req: Request, res: Response) => {
   });
 
   if (!channel || channel.creatorId !== adminId) {
-    return res.status(403).json({ message: "Not allowed" });
+    return res.status(StatusCodes.FORBIDDEN).json({ message: "Not allowed" });
   }
 
   await prisma.channelBlocked.deleteMany({
@@ -193,15 +193,15 @@ export const sendChannelMessage = async (req: Request, res: Response) => {
   const { content } = req.body;
 
   if (!userId) {
-    return res.status(401).json({ message: "Unauthorized" });
+    return res.status(StatusCodes.UNAUTHORIZED).json({ message: "Unauthorized" });
   }
 
   if (!channelId) {
-    return res.status(400).json({ message: "Channel ID required" });
+    return res.status(StatusCodes.BAD_REQUEST).json({ message: "Channel ID required" });
   }
 
   if (!content || !content.trim()) {
-    return res.status(400).json({ message: "Message content required" });
+    return res.status(StatusCodes.BAD_REQUEST).json({ message: "Message content required" });
   }
 
   const channel = await prisma.channel.findUnique({
@@ -210,11 +210,11 @@ export const sendChannelMessage = async (req: Request, res: Response) => {
   });
 
   if (!channel) {
-    return res.status(404).json({ message: "Channel not found" });
+    return res.status(StatusCodes.NOT_FOUND).json({ message: "Channel not found" });
   }
 
   if (channel.expiresAt < new Date()) {
-    return res.status(400).json({ message: "Channel expired" });
+    return res.status(StatusCodes.BAD_REQUEST).json({ message: "Channel expired" });
   }
 
   const blocked = await prisma.channelBlocked.findUnique({
@@ -227,7 +227,7 @@ export const sendChannelMessage = async (req: Request, res: Response) => {
   });
 
   if (blocked) {
-    return res.status(403).json({
+    return res.status(StatusCodes.FORBIDDEN).json({
       message: "You are blocked in this channel",
     });
   }
@@ -257,7 +257,7 @@ export const sendChannelMessage = async (req: Request, res: Response) => {
   const io = getIO();
   io.to(channelId).emit("channelMessage", message);
 
-  return res.status(201).json(message);
+  return res.status(StatusCodes.CREATED).json(message);
 };
 
 export const getChannels = async (req: Request, res: Response) => {

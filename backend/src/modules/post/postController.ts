@@ -14,67 +14,83 @@ export const createPost = async (req: Request, res: Response) => {
   const userId = req.userId;
   const { content, mediaUrl, mediaType } = req.body;
 
+  if (!userId) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({
+      message: "Unauthorized",
+    });
+  }
+
   const hashtags = [...new Set(extractHashtags(content))];
 
-  const post = await prisma.post.create({
-    data: {
-      content,
-      mediaUrl,
-      mediaType,
-      authorId: userId as string,
+  const post = await prisma.$transaction(async (tx) => {
+    const createdPost = await tx.post.create({
+      data: {
+        content,
+        mediaUrl,
+        mediaType,
+        authorId: userId,
+      },
+    });
+
+    const hashtagRecords = await Promise.all(
+      hashtags.map((tag) =>
+        tx.hashTag.upsert({
+          where: { tag },
+          update: {
+            count: { increment: 1 },
+          },
+          create: {
+            tag,
+            count: 1,
+          },
+        })
+      )
+    );
+
+    await Promise.all(
+      hashtagRecords.map((hashtag) =>
+        tx.postHashTag.create({
+          data: {
+            postId: createdPost.id,
+            hashtagId: hashtag.id,
+          },
+        })
+      )
+    );
+
+    return createdPost;
+  });
+
+  const fullPost = await prisma.post.findUnique({
+    where: { id: post.id },
+    include: {
+      author: {
+        select: {
+          id: true,
+          username: true,
+          image: true,
+        },
+      },
+      hashtags: {
+        include: {
+          hashTag: true,
+        },
+      },
+      _count: {
+        select: {
+          likes: true,
+          comments: true,
+        },
+      },
     },
   });
 
-  for(const tag of hashtags) {
-    const hashtag = await prisma.hashTag.upsert({
-      where: { tag },
-      update: {
-        count: { increment: 1 },
-      }, 
-      create: {
-        tag,
-        count: 1
-      }
-    });
-
-    await prisma.postHashTag.create({
-      data: {
-        postId: post.id,
-        hashtagId: hashtag.id,
-      }
-    })
-  };
-
-const fullPost = await prisma.post.findUnique({
-  where: { id: post.id },
-  include: {
-    author: {
-      select: {
-        id: true,
-        username: true,
-        image: true,
-      },
-    },
-    hashtags: {
-      include: {
-        hashTag: true,
-      },
-    },
-    _count: {
-      select: {
-        likes: true,
-        comments: true,
-      },
-    },
-  },
-});
-
- const formattedPost = {
+  const formattedPost = {
     ...fullPost,
     hashtags: fullPost?.hashtags.map((h) => h.hashTag.tag) || [],
   };
 
-    const trendingHashtags = await prisma.hashTag.findMany({
+  const trendingHashtags = await prisma.hashTag.findMany({
     orderBy: {
       count: "desc",
     },
@@ -98,146 +114,180 @@ export const deletePost = async (req: Request, res: Response) => {
       .json({ message: "Unauthorized" });
   }
 
-  const relations = await prisma.postHashTag.findMany({
-    where: { postId: id },
-  });
+  try {
+    await prisma.$transaction(async (tx) => {
+      const post = await tx.post.findUnique({
+        where: { id },
+        select: { authorId: true },
+      });
 
-  await Promise.all(
-    relations.map((relation) =>
-      prisma.hashTag.update({
-        where: { id: relation.hashtagId },
-        data: {
+      if (!post || post.authorId !== userId) {
+        throw new Error("FORBIDDEN");
+      }
+
+      const relations = await tx.postHashTag.findMany({
+        where: { postId: id },
+        select: { hashtagId: true },
+      });
+
+      const hashtagIds = relations.map((r) => r.hashtagId);
+
+      if (hashtagIds.length > 0) {
+        await Promise.all(
+          hashtagIds.map((hashtagId) =>
+            tx.hashTag.update({
+              where: { id: hashtagId },
+              data: {
+                count: { decrement: 1 },
+              },
+            })
+          )
+        );
+      }
+
+      await tx.postHashTag.deleteMany({
+        where: { postId: id },
+      });
+
+      await tx.post.delete({
+        where: { id },
+      });
+
+      await tx.hashTag.deleteMany({
+        where: {
           count: {
-            decrement: 1,
+            lte: 0,
           },
         },
-      })
-    )
-  );
+      });
+    });
 
-  await prisma.postHashTag.deleteMany({
-    where: { postId: id },
-  });
-
-  const result = await prisma.post.deleteMany({
-    where: {
-      id,
-      authorId: userId,
-    },
-  });
-
-  if (result.count === 0) {
-    return res
-      .status(StatusCodes.FORBIDDEN)
-      .json({ message: "Post not found or not allowed" });
-  }
-
-  await prisma.hashTag.deleteMany({
-    where: {
-      count: {
-        lte: 0,
+    const trending = await prisma.hashTag.findMany({
+      orderBy: {
+        count: "desc",
       },
-    },
-  });
+      take: 5,
+    });
 
-  const trending = await prisma.hashTag.findMany({
-    orderBy: {
-      count: "desc",
-    },
-    take: 5,
-  });
+    const io = getIO();
+    io.emit("post:deleted", id);
+    io.emit("hashtags:updated", trending);
 
-  const io = getIO();
+    return res.status(StatusCodes.OK).json({
+      message: "Post deleted successfully",
+    });
 
-  io.emit("post:deleted", id);
-  io.emit("hashtags:updated", trending);
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message === "FORBIDDEN") {
+      return res.status(StatusCodes.FORBIDDEN).json({
+        message: "Post not found or not allowed",
+      });
+    }
 
-  return res.status(StatusCodes.OK).json({
-    message: "Post deleted successfully",
-  });
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "Something went wrong",
+    });
+  }
 };
 
 export const toggleLike = async (req: Request, res: Response) => {
   const userId = req.userId;
   const { id } = req.params as { id: string };
 
-  if (!userId)
-    return res
-      .status(StatusCodes.UNAUTHORIZED)
-      .json({ message: "Unauthorized" });
-
-  const post = await prisma.post.findUnique({
-    where: { id },
-    select: { authorId: true },
-  });
-
-  if (!post) {
-    return res
-      .status(StatusCodes.NOT_FOUND)
-      .json({ message: "Post not found" });
+  if (!userId) {
+    return res.status(401).json({ message: "Unauthorized" });
   }
 
-  const existing = await prisma.like.findUnique({
-    where: {
-      userId_postId: {
-        userId,
-        postId: id,
-      },
-    },
-  });
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      const post = await tx.post.findUnique({
+        where: { id },
+        select: { authorId: true },
+      });
 
-  let isLiked = false;
+      if (!post) {
+        throw new Error("NOT_FOUND");
+      }
 
-  if (existing) {
-    await prisma.like.delete({
-      where: {
-        userId_postId: {
-          userId,
-          postId: id,
-        },
-      },
-    });
-
-    isLiked = false;
-  } else {
-    await prisma.like.create({
-      data: {
-        userId,
-        postId: id,
-      },
-    });
-
-    isLiked = true;
-  }
-
-  const io = getIO();
-
-  if (isLiked && post.authorId !== userId) {
-    const notification = await prisma.notification.create({
-      data: {
-        type: "LIKE",
-        userId: post.authorId,
-        actorId: userId,
-        postId: id,
-      },
-      include: {
-        actor: {
-          select: {
-            id: true,
-            username: true,
-            image: true,
+      const existing = await tx.like.findUnique({
+        where: {
+          userId_postId: {
+            userId,
+            postId: id,
           },
         },
-      },
+      });
+
+      let isLiked = false;
+      let notification = null;
+
+      if (existing) {
+        await tx.like.delete({
+          where: {
+            userId_postId: {
+              userId,
+              postId: id,
+            },
+          },
+        });
+
+        isLiked = false;
+      } else {
+        await tx.like.create({
+          data: {
+            userId,
+            postId: id,
+          },
+        });
+
+        isLiked = true;
+
+        if (post.authorId !== userId) {
+          notification = await tx.notification.create({
+            data: {
+              type: "LIKE",
+              userId: post.authorId,
+              actorId: userId,
+              postId: id,
+            },
+            include: {
+              actor: {
+                select: {
+                  id: true,
+                  username: true,
+                  image: true,
+                },
+              },
+            },
+          });
+        }
+      }
+
+      return { isLiked, post, notification };
     });
 
-    io.to(`user:${post.authorId}`).emit("notification", notification);
-    io.emit("post:liked", {
-      postId: id,
-    });
+    const io = getIO();
+
+    if (result.isLiked) {
+      io.emit("post:liked", { postId: id });
+
+      if (result.notification) {
+        io.to(`user:${result.post.authorId}`).emit(
+          "notification",
+          result.notification
+        );
+      }
+    }
+
+    return res.json({ isLiked: result.isLiked });
+
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message === "NOT_FOUND") {
+      return res.status(404).json({ message: "Post not found" });
+    }
+
+    return res.status(500).json({ message: "Something went wrong" });
   }
-
-  return res.json({ isLiked });
 };
 
 export const toggleSave = async (req: Request, res: Response) => {
@@ -671,7 +721,6 @@ export const getPostComments = async (req: Request, res: Response) => {
   const comments = await prisma.comment.findMany({
     where: {
       postId,
-      parentId: null,
     },
 
     orderBy: {
