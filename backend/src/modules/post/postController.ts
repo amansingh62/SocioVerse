@@ -11,19 +11,19 @@ function extractHashtags(content: string) {
 }
 
 export const createPost = async (req: Request, res: Response) => {
-  const userId = req.userId;
-  const { content, mediaUrl, mediaType } = req.body;
+  try {
+    const userId = req.userId;
+    const { content, mediaUrl, mediaType } = req.body;
 
-  if (!userId) {
-    return res.status(StatusCodes.UNAUTHORIZED).json({
-      message: "Unauthorized",
-    });
-  }
+    if (!userId) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({
+        message: "Unauthorized",
+      });
+    }
 
-  const hashtags = [...new Set(extractHashtags(content))];
+    const hashtags = [...new Set(extractHashtags(content))];
 
-  const post = await prisma.$transaction(async (tx) => {
-    const createdPost = await tx.post.create({
+    const createdPost = await prisma.post.create({
       data: {
         content,
         mediaUrl,
@@ -32,76 +32,73 @@ export const createPost = async (req: Request, res: Response) => {
       },
     });
 
-    const hashtagRecords = await Promise.all(
-      hashtags.map((tag) =>
-        tx.hashTag.upsert({
-          where: { tag },
-          update: {
-            count: { increment: 1 },
-          },
-          create: {
-            tag,
-            count: 1,
-          },
-        })
-      )
-    );
+    for (const tag of hashtags) {
+      const hashtag = await prisma.hashTag.upsert({
+        where: { tag },
+        update: {
+          count: { increment: 1 },
+        },
+        create: {
+          tag,
+          count: 1,
+        },
+      });
 
-    await Promise.all(
-      hashtagRecords.map((hashtag) =>
-        tx.postHashTag.create({
-          data: {
-            postId: createdPost.id,
-            hashtagId: hashtag.id,
+      await prisma.postHashTag.create({
+        data: {
+          postId: createdPost.id,
+          hashtagId: hashtag.id,
+        },
+      });
+    }
+
+    const fullPost = await prisma.post.findUnique({
+      where: { id: createdPost.id },
+      include: {
+        author: {
+          select: {
+            id: true,
+            username: true,
+            image: true,
           },
-        })
-      )
-    );
-
-    return createdPost;
-  });
-
-  const fullPost = await prisma.post.findUnique({
-    where: { id: post.id },
-    include: {
-      author: {
-        select: {
-          id: true,
-          username: true,
-          image: true,
+        },
+        hashtags: {
+          include: {
+            hashTag: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
+          },
         },
       },
-      hashtags: {
-        include: {
-          hashTag: true,
-        },
+    });
+
+    const formattedPost = {
+      ...fullPost,
+      hashtags: fullPost?.hashtags.map((h) => h.hashTag.tag) || [],
+    };
+
+    const trendingHashtags = await prisma.hashTag.findMany({
+      orderBy: {
+        count: "desc",
       },
-      _count: {
-        select: {
-          likes: true,
-          comments: true,
-        },
-      },
-    },
-  });
+      take: 5,
+    });
 
-  const formattedPost = {
-    ...fullPost,
-    hashtags: fullPost?.hashtags.map((h) => h.hashTag.tag) || [],
-  };
+    const io = getIO();
+    io.emit("post:created", formattedPost);
+    io.emit("hashtags:updated", trendingHashtags);
 
-  const trendingHashtags = await prisma.hashTag.findMany({
-    orderBy: {
-      count: "desc",
-    },
-    take: 5,
-  });
-
-  const io = getIO();
-  io.emit("post:created", formattedPost);
-  io.emit("hashtags:updated", trendingHashtags);
-
-  return res.status(StatusCodes.CREATED).json(formattedPost);
+    return res.status(StatusCodes.CREATED).json(formattedPost);
+  } catch (error) {
+    console.error("Create Post Error:", error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+      message: "Something went wrong",
+    });
+  }
 };
 
 export const deletePost = async (req: Request, res: Response) => {
