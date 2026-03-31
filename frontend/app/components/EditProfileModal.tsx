@@ -48,12 +48,7 @@ export default function EditProfileModal({
 
     const { data } = await api.get<{ url: string; key: string }>(
       "/user/upload-url",
-      {
-        params: {
-          fileType: file.type,
-          fileSize: file.size,
-        },
-      },
+      { params: { fileType: file.type, fileSize: file.size } },
     );
 
     await fetch(data.url, {
@@ -63,7 +58,6 @@ export default function EditProfileModal({
     });
 
     const imageUrl = `https://${process.env.NEXT_PUBLIC_S3_BUCKET}.s3.amazonaws.com/${data.key}`;
-
     setPreview(imageUrl);
     setImage(imageUrl);
   };
@@ -71,10 +65,8 @@ export default function EditProfileModal({
   const handleSave = async () => {
     setLoading(true);
     setError("");
-
     try {
       await updateProfile({ username, bio, image }, profile.id);
-
       onClose();
     } catch {
       setError("Update failed. Please try again.");
@@ -85,50 +77,41 @@ export default function EditProfileModal({
 
   return (
     <div
-      className="fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-5"
+      className="fixed inset-0 modal-backdrop flex items-end sm:items-center justify-center z-50 p-0 sm:p-5"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
         className="
-        bg-[rgba(255,240,248,0.96)] backdrop-blur-[28px]
-        rounded-[26px] border border-[rgba(224,86,164,0.25)]
-        shadow-[0_28px_80px_rgba(224,86,164,0.18)]
-        w-full max-w-[440px] flex flex-col gap-6 p-8
-      "
+          bg-[rgba(255,240,248,0.96)] backdrop-blur-[28px]
+          border border-[rgba(224,86,164,0.25)]
+          shadow-[0_28px_80px_rgba(224,86,164,0.18)]
+          w-full sm:max-w-[440px] flex flex-col gap-5 sm:gap-6
+          p-6 sm:p-8
+          rounded-t-[28px] sm:rounded-[26px]
+        "
       >
-
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="font-display text-[24px] font-semibold text-[#7a1d4f]">
+            <h2 className="font-display text-[20px] sm:text-[24px] font-semibold text-[#7a1d4f]">
               Edit Profile
             </h2>
-
-            <p className="text-[12px] text-[#d15a9f] mt-0.5">
+            <p className="text-[11px] sm:text-[12px] text-[#d15a9f] mt-0.5">
               Update your public information
             </p>
           </div>
 
           <button
             onClick={onClose}
-            className="
-            w-8 h-8 rounded-full flex items-center justify-center text-xs
-            border border-[rgba(224,86,164,0.30)] text-[#d15a9f]
-            hover:bg-[rgba(224,86,164,0.12)]
-            transition-all
-          "
+            className="w-8 h-8 rounded-full flex items-center justify-center text-xs border border-[rgba(224,86,164,0.30)] text-[#d15a9f] hover:bg-[rgba(224,86,164,0.12)] transition-all"
           >
             ✕
           </button>
         </div>
 
-        <div className="flex flex-col items-center gap-3">
-
+        <div className="flex flex-col items-center gap-2">
           <div className="relative group">
-
-            <div className="w-24 h-24 rounded-full p-[3px] bg-gradient-to-r from-[#E056A4] to-[#ff7bbd]">
-
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full p-[3px] bg-gradient-to-r from-[#E056A4] to-[#ff7bbd]">
               <div className="w-full h-full rounded-full overflow-hidden">
-
                 {preview ? (
                   <Image
                     src={preview}
@@ -142,113 +125,56 @@ export default function EditProfileModal({
                     {(profile.name?.[0] ?? profile.username?.[0])?.toUpperCase()}
                   </div>
                 )}
-
               </div>
-
             </div>
 
-            <label
-              className="
-              absolute inset-0 rounded-full flex flex-col items-center justify-center
-              bg-[rgba(0,0,0,0)] group-hover:bg-[rgba(0,0,0,0.45)]
-              cursor-pointer transition
-            "
-            >
-              <span className="text-white text-xs opacity-0 group-hover:opacity-100">
-                Change
-              </span>
-
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFile}
-                className="hidden"
-              />
+            <label className="absolute inset-0 rounded-full flex flex-col items-center justify-center bg-[rgba(0,0,0,0)] group-hover:bg-[rgba(0,0,0,0.45)] cursor-pointer transition">
+              <span className="text-white text-xs opacity-0 group-hover:opacity-100">Change</span>
+              <input type="file" accept="image/*" onChange={handleFile} className="hidden" />
             </label>
-
           </div>
 
-          <p className="text-[11px] text-[#d15a9f]">
-            JPG, PNG, WEBP or AVIF · Max 5 MB
-          </p>
-
+          <p className="text-[11px] text-[#d15a9f]">JPG, PNG, WEBP or AVIF · Max 5 MB</p>
         </div>
 
         <div className="h-px bg-[rgba(224,86,164,0.15)]" />
 
         <div className="flex flex-col gap-1.5">
-
-          <label className="text-[11px] text-[#d15a9f] uppercase tracking-wide">
-            Username
-          </label>
-
+          <label className="text-[11px] text-[#d15a9f] uppercase tracking-wide">Username</label>
           <input
             value={username}
             onChange={(e) => setUsername(e.target.value.toLowerCase())}
-            className="
-            px-4 py-2.5 rounded-xl
-            bg-white border border-[rgba(224,86,164,0.25)]
-            focus:border-[#E056A4]
-            outline-none
-          "
+            className="px-4 py-2.5 rounded-xl bg-white border border-[rgba(224,86,164,0.25)] focus:border-[#E056A4] outline-none text-sm"
           />
-
         </div>
 
         <div className="flex flex-col gap-1.5">
-
-          <label className="text-[11px] text-[#d15a9f] uppercase tracking-wide">
-            Bio
-          </label>
-
+          <label className="text-[11px] text-[#d15a9f] uppercase tracking-wide">Bio</label>
           <textarea
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             rows={3}
-            className="
-            px-4 py-2.5 rounded-xl
-            bg-white border border-[rgba(224,86,164,0.25)]
-            focus:border-[#E056A4]
-            outline-none
-          "
+            className="px-4 py-2.5 rounded-xl bg-white border border-[rgba(224,86,164,0.25)] focus:border-[#E056A4] outline-none text-sm resize-none"
           />
-
         </div>
 
-        {error && (
-          <p className="text-[12px] text-red-500">
-            {error}
-          </p>
-        )}
+        {error && <p className="text-[12px] text-red-500">{error}</p>}
 
         <div className="flex gap-3">
-
           <button
             onClick={onClose}
-            className="
-            flex-1 py-2.5 rounded-xl border
-            border-[rgba(224,86,164,0.30)]
-            text-[#d15a9f]
-          "
+            className="flex-1 py-2.5 rounded-xl border border-[rgba(224,86,164,0.30)] text-[#d15a9f] text-sm transition hover:bg-[rgba(224,86,164,0.06)]"
           >
             Cancel
           </button>
-
           <button
             onClick={handleSave}
             disabled={loading || !isChanged}
-            className="
-            flex-1 py-2.5 rounded-xl
-            bg-gradient-to-r from-[#E056A4] to-[#ff7bbd]
-            text-white font-semibold
-            disabled:opacity-40
-          "
+            className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-[#E056A4] to-[#ff7bbd] text-white text-sm font-semibold disabled:opacity-40 transition"
           >
             {loading ? "Saving…" : "Save Changes"}
           </button>
-
         </div>
-
       </div>
     </div>
   );

@@ -11,7 +11,7 @@ type User = {
   image?: string;
 };
 
-export default function SearchBar() {
+export default function SearchBar({ rightSlot }: { rightSlot?: React.ReactNode }) {
   const router = useRouter();
 
   const [users, setUsers] = useState<User[]>([]);
@@ -19,8 +19,10 @@ export default function SearchBar() {
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const mobileInputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -28,14 +30,9 @@ export default function SearchBar() {
     setQuery(value);
     setSelectedIndex(-1);
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    if (!value) {
-      setUsers([]);
-      return;
-    }
+    if (!value) { setUsers([]); return; }
     debounceRef.current = setTimeout(async () => {
-      const { data } = await api.get<User[]>(
-        `/user/search?q=${encodeURIComponent(value)}`,
-      );
+      const { data } = await api.get<User[]>(`/user/search?q=${encodeURIComponent(value)}`);
       setUsers(data);
     }, 100);
   };
@@ -49,296 +46,177 @@ export default function SearchBar() {
     setQuery("");
     setUsers([]);
     setFocused(false);
+    setMobileSearchOpen(false);
     router.push(`/dashboard/profile/${user.id}`);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const list = query ? users : recent;
     if (!list.length) return;
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setSelectedIndex((p) => (p + 1) % list.length);
-    }
-    if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setSelectedIndex((p) => (p <= 0 ? list.length - 1 : p - 1));
-    }
-    if (e.key === "Enter" && selectedIndex >= 0)
-      selectUser(list[selectedIndex]);
+    if (e.key === "ArrowDown") { e.preventDefault(); setSelectedIndex((p) => (p + 1) % list.length); }
+    if (e.key === "ArrowUp") { e.preventDefault(); setSelectedIndex((p) => (p <= 0 ? list.length - 1 : p - 1)); }
+    if (e.key === "Enter" && selectedIndex >= 0) selectUser(list[selectedIndex]);
   };
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (
         !inputRef.current?.contains(e.target as Node) &&
+        !mobileInputRef.current?.contains(e.target as Node) &&
         !dropdownRef.current?.contains(e.target as Node)
-      )
-        setFocused(false);
+      ) setFocused(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
+
+  useEffect(() => {
+    if (mobileSearchOpen) setTimeout(() => mobileInputRef.current?.focus(), 50);
+  }, [mobileSearchOpen]);
 
   const handleLogout = async () => {
     await api.post("/auth/logout");
     router.replace("/login");
   };
 
-  return (
-    <header
-      style={{
-        position: "sticky",
-        top: 0,
-        zIndex: 50,
-        width: "100%",
-        background: "linear-gradient(180deg, #c63c8c 0%, #a62c74 100%)",
-        borderBottom: "1px solid rgba(255,255,255,0.12)",
-        boxShadow: "0 2px 20px rgba(233,30,140,0.25)",
-      }}
+  const dropdown = (
+    <div
+      ref={dropdownRef}
+      className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white rounded-2xl overflow-hidden shadow-[0_16px_40px_rgba(0,0,0,0.14)] z-[100]"
     >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          padding: "0 32px",
-          height: "60px",
-          gridTemplateColumns: "1fr auto 1fr",
-        }}
-      >
-        <div
-          onClick={() => router.push("/dashboard")}
-          style={{
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            minWidth: 0,
-          }}
-        >
-          <Image
-            src="/logo.png"
-            alt="Socioverse"
-            width={110}
-            height={110}
-            style={{
-              width: "110px",
-              height: "110px",
-              objectFit: "contain",
-              display: "block",
-            }}
-          />
+      {!query && recent.length > 0 && (
+        <>
+          <div className="flex justify-between items-center px-4 pt-2.5 pb-1.5 text-[11px] text-[#AAAABC] font-bold tracking-widest uppercase">
+            <span>Recent</span>
+            <button
+              onClick={() => setRecent([])}
+              className="text-[#E91E8C] text-xs font-semibold bg-transparent border-none cursor-pointer"
+            >
+              Clear
+            </button>
+          </div>
+          {recent.map((user, i) => (
+            <UserItem key={user.id} user={user} active={i === selectedIndex} onClick={() => selectUser(user)} />
+          ))}
+        </>
+      )}
+      {query && users.map((user, i) => (
+        <UserItem key={user.id} user={user} active={i === selectedIndex} onClick={() => selectUser(user)} />
+      ))}
+      {query && users.length === 0 && (
+        <p className="py-4 text-center text-[13px] text-[#AAAABC]">No users found</p>
+      )}
+    </div>
+  );
+
+  return (
+    <header className="sticky top-0 z-50 w-full bg-gradient-to-b from-[#c63c8c] to-[#a62c74] border-b border-white/10 shadow-[0_2px_20px_rgba(233,30,140,0.25)]">
+
+      <div className="hidden xl:flex items-center px-8 h-[60px] relative">
+
+        <div onClick={() => router.push("/dashboard")} className="cursor-pointer flex items-center">
+          <Image src="/logo.png" alt="Socioverse" width={110} height={110} className="w-[110px] h-[110px] object-contain" />
         </div>
 
-        <div
-          style={{
-            position: "absolute",
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: "360px",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              padding: "10px 18px",
-              borderRadius: "50px",
-              background: "rgba(255,255,255,0.18)",
-              border: "1px solid rgba(255,255,255,0.30)",
-            }}
-          >
-            <svg
-              viewBox="0 0 24 24"
-              width="15"
-              height="15"
-              fill="none"
-              stroke="rgba(255,255,255,0.85)"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <circle cx="11" cy="11" r="8" />
-              <path d="M21 21l-4.35-4.35" />
-            </svg>
-            <input
-              ref={inputRef}
-              value={query}
-              onChange={(e) => handleSearch(e.target.value)}
-              onFocus={() => setFocused(true)}
-              onKeyDown={handleKeyDown}
-              placeholder="Search users…"
-              style={{
-                flex: 1,
-                background: "transparent",
-                border: "none",
-                outline: "none",
-                fontSize: "13.5px",
-                fontFamily: "'DM Sans', sans-serif",
-                color: "#fff",
-                fontWeight: 500,
-              }}
-            />
-            {query && (
-              <button
-                onClick={() => {
-                  setQuery("");
-                  setUsers([]);
-                }}
-                style={{
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  color: "rgba(255,255,255,0.75)",
-                  fontSize: "14px",
-                  lineHeight: 1,
-                  padding: 0,
-                }}
-              >
-                ✕
-              </button>
-            )}
-          </div>
-
-          {focused && (
-            <div
-              ref={dropdownRef}
-              style={{
-                position: "absolute",
-                top: "calc(100% + 8px)",
-                left: 0,
-                right: 0,
-                background: "#fff",
-                borderRadius: "16px",
-                overflow: "hidden",
-                boxShadow: "0 16px 40px rgba(0,0,0,0.14)",
-              }}
-            >
-              {!query && recent.length > 0 && (
-                <>
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      padding: "10px 16px 6px",
-                      fontFamily: "'DM Sans', sans-serif",
-                      fontSize: "11px",
-                      color: "#AAAABC",
-                      fontWeight: 700,
-                      letterSpacing: "0.05em",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    <span>Recent</span>
-                    <button
-                      onClick={() => setRecent([])}
-                      style={{
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        color: "#E91E8C",
-                        fontSize: "12px",
-                        fontWeight: 600,
-                        fontFamily: "'DM Sans', sans-serif",
-                      }}
-                    >
-                      Clear
-                    </button>
-                  </div>
-                  {recent.map((user, i) => (
-                    <UserItem
-                      key={user.id}
-                      user={user}
-                      active={i === selectedIndex}
-                      onClick={() => selectUser(user)}
-                    />
-                  ))}
-                </>
-              )}
-              {query &&
-                users.map((user, i) => (
-                  <UserItem
-                    key={user.id}
-                    user={user}
-                    active={i === selectedIndex}
-                    onClick={() => selectUser(user)}
-                  />
-                ))}
-              {query && users.length === 0 && (
-                <div
-                  style={{
-                    padding: "16px",
-                    fontFamily: "'DM Sans', sans-serif",
-                    fontSize: "13px",
-                    color: "#AAAABC",
-                    textAlign: "center",
-                  }}
-                >
-                  No users found
-                </div>
+        <div className="absolute left-1/2 -translate-x-1/2 w-[360px]">
+          <div className="relative">
+            <div className="flex items-center gap-2.5 px-[18px] py-2.5 rounded-full bg-white/20 border border-white/30">
+              <svg viewBox="0 0 24 24" className="w-[15px] h-[15px] shrink-0" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
+              </svg>
+              <input
+                ref={inputRef}
+                value={query}
+                onChange={(e) => handleSearch(e.target.value)}
+                onFocus={() => setFocused(true)}
+                onKeyDown={handleKeyDown}
+                placeholder="Search users…"
+                className="flex-1 bg-transparent border-none outline-none text-[13.5px] text-white font-medium placeholder:text-white/60 font-sans"
+              />
+              {query && (
+                <button onClick={() => { setQuery(""); setUsers([]); }} className="text-white/75 text-sm leading-none bg-transparent border-none cursor-pointer p-0">
+                  ✕
+                </button>
               )}
             </div>
-          )}
+            {focused && dropdown}
+          </div>
         </div>
 
-        <div
-          style={{ marginLeft: "auto", display: "flex", alignItems: "center" }}
-        >
+        <div className="ml-auto">
           <button
             onClick={handleLogout}
-            className="
-    flex items-center gap-2 px-3.5 py-2.5 rounded-xl
-    border border-white/60 text-white
-    text-sm font-medium transition-all duration-200
-    hover:bg-white hover:text-[#c63c8c]
-  "
+            className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-white/60 text-white text-sm font-medium transition-all duration-200 hover:bg-white hover:text-[#c63c8c]"
           >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              className="w-4 h-4"
-            >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-4 h-4">
               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
             </svg>
             Sign out
           </button>
         </div>
       </div>
+
+      <div className="flex xl:hidden items-center px-4 h-[56px] gap-3">
+
+        <div onClick={() => router.push("/dashboard")} className="cursor-pointer flex items-center">
+          <Image src="/logo.png" alt="Socioverse" width={80} height={80} className="w-[80px] h-[80px] object-contain" />
+        </div>
+
+        <div className="flex-1" />
+
+        <button
+          onClick={() => setMobileSearchOpen((v) => !v)}
+          className="flex items-center justify-center w-9 h-9 rounded-full bg-white/20 text-white"
+          aria-label="Search"
+        >
+          {mobileSearchOpen ? (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-4 h-4">
+              <path d="M18 6 6 18M6 6l12 12" />
+            </svg>
+          ) : (
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" className="w-4 h-4">
+              <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
+            </svg>
+          )}
+        </button>
+
+        {rightSlot}
+      </div>
+
+      {mobileSearchOpen && (
+        <div className="xl:hidden px-4 pb-3 relative">
+          <div className="flex items-center gap-2.5 px-[18px] py-2.5 rounded-full bg-white/20 border border-white/30">
+            <svg viewBox="0 0 24 24" className="w-[15px] h-[15px] shrink-0" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
+            </svg>
+            <input
+              ref={mobileInputRef}
+              value={query}
+              onChange={(e) => handleSearch(e.target.value)}
+              onFocus={() => setFocused(true)}
+              onKeyDown={handleKeyDown}
+              placeholder="Search users…"
+              className="flex-1 bg-transparent border-none outline-none text-[13.5px] text-white font-medium placeholder:text-white/60"
+            />
+            {query && (
+              <button onClick={() => { setQuery(""); setUsers([]); }} className="text-white/75 text-sm leading-none bg-transparent border-none cursor-pointer p-0">
+                ✕
+              </button>
+            )}
+          </div>
+          {focused && dropdown}
+        </div>
+      )}
+
     </header>
   );
 }
 
-function UserItem({
-  user,
-  active,
-  onClick,
-}: {
-  user: User;
-  active: boolean;
-  onClick: () => void;
-}) {
+function UserItem({ user, active, onClick }: { user: User; active: boolean; onClick: () => void }) {
   return (
     <div
       onClick={onClick}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: "11px",
-        padding: "10px 16px",
-        cursor: "pointer",
-        background: active ? "#FCE4F1" : "transparent",
-        transition: "background 0.15s",
-      }}
-      onMouseEnter={(e) => {
-        if (!active)
-          (e.currentTarget as HTMLDivElement).style.background = "#FBE9F0";
-      }}
-      onMouseLeave={(e) => {
-        if (!active)
-          (e.currentTarget as HTMLDivElement).style.background = "transparent";
-      }}
+      className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors duration-150 ${active ? "bg-[#FCE4F1]" : "hover:bg-[#FBE9F0]"}`}
     >
       {user.image ? (
         <Image
@@ -346,56 +224,16 @@ function UserItem({
           alt={user.username}
           width={34}
           height={34}
-          style={{
-            width: "34px",
-            height: "34px",
-            borderRadius: "50%",
-            objectFit: "cover",
-            flexShrink: 0,
-          }}
+          className="w-[34px] h-[34px] rounded-full object-cover shrink-0"
         />
       ) : (
-        <div
-          style={{
-            width: "34px",
-            height: "34px",
-            borderRadius: "50%",
-            flexShrink: 0,
-            background: "#E91E8C",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#fff",
-            fontWeight: 700,
-            fontSize: "13px",
-            fontFamily: "'DM Sans', sans-serif",
-          }}
-        >
+        <div className="w-[34px] h-[34px] rounded-full shrink-0 bg-[#E91E8C] flex items-center justify-center text-white font-bold text-[13px]">
           {user.username[0].toUpperCase()}
         </div>
       )}
-      <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-        <span
-          style={{
-            fontFamily: "'DM Serif Display', Georgia, serif",
-            fontSize: "14px",
-            fontWeight: 600,
-            color: "#1C1C2E",
-            lineHeight: 1,
-          }}
-        >
-          {user.username}
-        </span>
-        <span
-          style={{
-            fontFamily: "'DM Sans', sans-serif",
-            fontSize: "12px",
-            color: "#E91E8C",
-            fontWeight: 500,
-          }}
-        >
-          @{user.username.toLowerCase()}
-        </span>
+      <div className="flex flex-col gap-0.5">
+        <span className="text-[14px] font-semibold text-[#1C1C2E] leading-none">{user.username}</span>
+        <span className="text-[12px] text-[#E91E8C] font-medium">@{user.username.toLowerCase()}</span>
       </div>
     </div>
   );

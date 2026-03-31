@@ -144,21 +144,11 @@ export default function ChatPage() {
 
   return (
     <div className="max-w-[640px] mx-auto flex flex-col h-[80vh]">
-      <div
-        className="flex flex-col flex-1 rounded-3xl overflow-hidden"
-        style={{
-          background: "rgba(255,230,242,0.85)",
-          border: "1px solid rgba(224,86,164,0.25)",
-          backdropFilter: "blur(20px)",
-        }}
-      >
-        {/* Header */}
-        <div
-          className="flex items-center gap-3 px-5 py-3"
-          style={{ borderBottom: "1px solid rgba(224,86,164,0.18)" }}
-        >
+      <div className="flex flex-col flex-1 rounded-3xl overflow-hidden bg-[rgba(255,230,242,0.85)] border border-[rgba(224,86,164,0.25)] backdrop-blur-[20px]">
+
+        <div className="flex items-center gap-3 px-4 sm:px-5 py-3 border-b border-[rgba(224,86,164,0.18)]">
           {otherUser?.image ? (
-            <div className="w-9 h-9 rounded-full overflow-hidden">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 shrink-0 rounded-full overflow-hidden">
               <Image
                 src={otherUser.image}
                 width={36}
@@ -168,23 +158,22 @@ export default function ChatPage() {
               />
             </div>
           ) : (
-            <div className="w-9 h-9 rounded-full bg-[#E056A4] flex items-center justify-center text-white text-sm font-bold">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 shrink-0 rounded-full bg-[#E056A4] flex items-center justify-center text-white text-xs sm:text-sm font-bold">
               {otherUser?.username?.[0]?.toUpperCase() || "?"}
             </div>
           )}
-          <div className="flex flex-col">
-            <p className="text-[14px] font-semibold text-black tracking-tight">
+          <div className="flex flex-col min-w-0">
+            <p className="text-[13px] sm:text-[14px] font-semibold text-black tracking-tight truncate">
               {otherUser?.username || "Chat"}
             </p>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-              <span className="text-[11px] text-pink-300">Active now</span>
+              <span className="text-[10px] sm:text-[11px] text-pink-300">Active now</span>
             </div>
           </div>
         </div>
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-4">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex flex-col gap-3 sm:gap-4">
           {messages.map((m) => {
             const isMe = m.sender.id === user?.id;
             return (
@@ -193,13 +182,13 @@ export default function ChatPage() {
                 className={`flex ${isMe ? "justify-end" : "justify-start"}`}
               >
                 <div
-                  className={`flex gap-2 max-w-[70%] ${
+                  className={`flex gap-2 max-w-[80%] sm:max-w-[70%] ${
                     isMe ? "flex-row-reverse" : ""
                   }`}
                 >
                   {!isMe &&
                     (m.sender.image ? (
-                      <div className="w-8 h-8 rounded-full overflow-hidden">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-full overflow-hidden">
                         <Image
                           src={m.sender.image}
                           width={32}
@@ -209,14 +198,14 @@ export default function ChatPage() {
                         />
                       </div>
                     ) : (
-                      <div className="w-8 h-8 rounded-full bg-[#E056A4] flex items-center justify-center text-white text-xs font-bold">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 shrink-0 rounded-full bg-[#E056A4] flex items-center justify-center text-white text-xs font-bold">
                         {m.sender.username[0].toUpperCase()}
                       </div>
                     ))}
 
                   <div className="flex flex-col">
                     <div
-                      className="px-4 py-2 rounded-2xl text-sm relative group shadow-sm"
+                      className="px-3 sm:px-4 py-2 rounded-2xl text-[13px] sm:text-sm relative group shadow-sm"
                       style={{
                         background: isMe ? "#E056A4" : "white",
                         color: isMe ? "white" : "black",
@@ -255,26 +244,17 @@ export default function ChatPage() {
           <div ref={bottomRef} />
         </div>
 
-        {/* Input */}
-        <div
-          className="p-4 flex gap-3 items-center"
-          style={{ borderTop: "1px solid rgba(224,86,164,0.18)" }}
-        >
+        <div className="p-3 sm:p-4 flex gap-2 sm:gap-3 items-center border-t border-[rgba(224,86,164,0.18)]">
           <input
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
             placeholder="Type a message..."
-            className="flex-1 px-4 py-2 rounded-xl outline-none text-sm"
-            style={{
-              background: "rgba(255,255,255,0.6)",
-              border: "1px solid rgba(224,86,164,0.3)",
-            }}
+            className="flex-1 px-3 sm:px-4 py-2 rounded-xl outline-none text-[13px] sm:text-sm bg-[rgba(255,255,255,0.6)] border border-[rgba(224,86,164,0.3)]"
           />
           <button
             onClick={sendMessage}
-            className="px-5 py-2 rounded-xl text-sm font-medium bg-[#E056A4] text-white transition hover:bg-white hover:text-[#E056A4]"
-            style={{ border: "1px solid #E056A4" }}
+            className="px-4 sm:px-5 py-2 rounded-xl text-[13px] sm:text-sm font-medium bg-[#E056A4] text-white border border-[#E056A4] transition hover:bg-white hover:text-[#E056A4]"
           >
             Send
           </button>

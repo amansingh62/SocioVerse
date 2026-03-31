@@ -75,26 +75,18 @@ export default function ChannelList({
   };
 
   return (
-    <div className="w-[260px] h-full border-r border-pink-200 flex flex-col ml-6">
-      <div className="p-3 border-b border-pink-200 flex flex-col gap-2">
-        <div className="flex gap-2">
+    <div className="w-[200px] sm:w-[260px] h-full border-r border-pink-200 flex flex-col ml-0 sm:ml-6 shrink-0">
+      <div className="p-2 sm:p-3 border-b border-pink-200 flex flex-col gap-2">
+        <div className="flex gap-1.5 sm:gap-2">
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="New channel..."
-            className="
-              flex-1 px-3 py-2 rounded-lg text-sm
-              border border-pink-200 outline-none
-              focus:ring-1 focus:ring-pink-400
-            "
+            className="flex-1 min-w-0 px-2 sm:px-3 py-2 rounded-lg text-[12px] sm:text-sm border border-pink-200 outline-none focus:ring-1 focus:ring-pink-400"
           />
-
           <button
             onClick={createChannel}
-            className="
-              px-3 py-2 bg-[#E056A4] text-white rounded-lg text-sm
-              hover:opacity-90 transition
-            "
+            className="px-2.5 sm:px-3 py-2 bg-[#E056A4] text-white rounded-lg text-sm hover:opacity-90 transition shrink-0"
           >
             +
           </button>
@@ -109,9 +101,9 @@ export default function ChannelList({
         {error && <p className="text-[11px] text-red-400">⚠️ {error}</p>}
       </div>
 
-      <div className="flex-1 overflow-y-auto p-2 flex flex-col gap-1">
+      <div className="flex-1 overflow-y-auto p-1.5 sm:p-2 flex flex-col gap-1">
         {channels.length === 0 && (
-          <p className="text-center text-pink-300 text-sm mt-6">
+          <p className="text-center text-pink-300 text-[12px] sm:text-sm mt-6">
             No channels yet
           </p>
         )}
@@ -124,17 +116,11 @@ export default function ChannelList({
             <button
               key={c.id}
               onClick={() => onSelect(c.id)}
-              className="
-                flex justify-between items-center
-                px-3 py-2 rounded-lg text-sm
-                hover:bg-pink-100 transition
-                text-pink-700
-              "
+              className="flex justify-between items-center px-2 sm:px-3 py-2 rounded-lg text-[12px] sm:text-sm hover:bg-pink-100 transition text-pink-700"
             >
-              <span># {c.name}</span>
-
+              <span className="truncate"># {c.name}</span>
               {hours <= 24 && hours >= 0 && (
-                <span className="text-[10px] text-red-400">{hours}h</span>
+                <span className="text-[10px] text-red-400 shrink-0 ml-1">{hours}h</span>
               )}
             </button>
           );
