@@ -74,37 +74,29 @@ export default function RegisterPage() {
   return (
     <div
       className="min-h-screen relative overflow-hidden"
-      style={{
-        background: "linear-gradient(135deg,#c63c8c,#7a1c5a)",
-      }}
+      style={{ background: "linear-gradient(135deg,#c63c8c,#7a1c5a)" }}
     >
-      {/* 🌸 Top Left Logo */}
-      <div className="absolute top-6 left-8 z-20 flex items-center gap-2">
-        <Image src="/login.logo.png" alt="Logo" width={120} height={120} />
+      <div className="absolute top-4 left-4 sm:top-6 sm:left-8 z-20 flex items-center gap-2">
+        <Image src="/login.logo.png" alt="Logo" width={120} height={120} className="w-[90px] sm:w-[120px]" />
       </div>
 
-      {/* Glow blobs */}
-      <div className="absolute w-[500px] h-[500px] bg-[#ff7bbd]/30 blur-[140px] rounded-full top-[-150px] left-[-120px]" />
-      <div className="absolute w-[500px] h-[500px] bg-[#ff4fa3]/20 blur-[140px] rounded-full bottom-[-150px] right-[-120px]" />
+      <div className="absolute w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] bg-[#ff7bbd]/30 blur-[100px] sm:blur-[140px] rounded-full top-[-100px] sm:top-[-150px] left-[-80px] sm:left-[-120px]" />
+      <div className="absolute w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] bg-[#ff4fa3]/20 blur-[100px] sm:blur-[140px] rounded-full bottom-[-100px] sm:bottom-[-150px] right-[-80px] sm:right-[-120px]" />
 
-      {/* Center Container */}
-      <div className="flex items-center justify-center min-h-screen p-5">
+      <div className="flex items-center justify-center min-h-screen p-4 sm:p-5 pt-20 sm:pt-5">
+        <div className="w-full max-w-[420px] flex flex-col gap-6 sm:gap-8 z-10">
 
-        <div className="w-full max-w-[420px] flex flex-col gap-8 z-10">
-
-          {/* Welcome text */}
           <div className="text-center">
-            <h1 className="text-[34px] font-semibold text-white tracking-tight">
+            <h1 className="text-[28px] sm:text-[34px] font-semibold text-white tracking-tight">
               Join Socioverse
             </h1>
-            <p className="text-pink-200 text-sm mt-1">
+            <p className="text-pink-200 text-[13px] sm:text-sm mt-1">
               Start your Socioverse journey today
             </p>
           </div>
 
-          {/* 💎 DARK PINK GLASS CARD */}
           <div
-            className="rounded-[28px] p-8 flex flex-col gap-5"
+            className="rounded-[24px] sm:rounded-[28px] p-6 sm:p-8 flex flex-col gap-5"
             style={{
               background: "rgba(198,60,140,0.25)",
               backdropFilter: "blur(35px)",
@@ -114,31 +106,25 @@ export default function RegisterPage() {
           >
             <form onSubmit={handleRegister} className="flex flex-col gap-4">
 
-              {/* Full Name */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] text-pink-200 uppercase">
-                  Full Name
-                </label>
+                <label className="text-[11px] text-pink-200 uppercase">Full Name</label>
                 <input
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Your name"
                   required
-                  className="px-4 py-3 rounded-xl outline-none text-white text-sm transition"
+                  className="px-4 py-2.5 sm:py-3 rounded-xl outline-none text-white text-[13px] sm:text-sm transition"
                   style={inputStyle}
                   onFocus={inputFocus}
                   onBlur={inputBlur}
                 />
               </div>
 
-              {/* Username */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] text-pink-200 uppercase">
-                  Username
-                </label>
+                <label className="text-[11px] text-pink-200 uppercase">Username</label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/50 text-sm select-none">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/50 text-[13px] sm:text-sm select-none">
                     @
                   </span>
                   <input
@@ -147,12 +133,11 @@ export default function RegisterPage() {
                     onChange={(e) => setUsername(e.target.value.toLowerCase())}
                     placeholder="yourname"
                     required
-                    className="px-4 py-3 pl-8 pr-10 rounded-xl outline-none text-white text-sm w-full transition"
+                    className="px-4 py-2.5 sm:py-3 pl-8 pr-10 rounded-xl outline-none text-white text-[13px] sm:text-sm w-full transition"
                     style={inputStyle}
                     onFocus={inputFocus}
                     onBlur={inputBlur}
                   />
-                  {/* Status icon */}
                   <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-sm">
                     {usernameStatus === "checking" && (
                       <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin inline-block" />
@@ -182,29 +167,23 @@ export default function RegisterPage() {
                 )}
               </div>
 
-              {/* Email */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] text-pink-200 uppercase">
-                  Email
-                </label>
+                <label className="text-[11px] text-pink-200 uppercase">Email</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   required
-                  className="px-4 py-3 rounded-xl outline-none text-white text-sm transition"
+                  className="px-4 py-2.5 sm:py-3 rounded-xl outline-none text-white text-[13px] sm:text-sm transition"
                   style={inputStyle}
                   onFocus={inputFocus}
                   onBlur={inputBlur}
                 />
               </div>
 
-              {/* Password */}
               <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] text-pink-200 uppercase">
-                  Password
-                </label>
+                <label className="text-[11px] text-pink-200 uppercase">Password</label>
                 <div className="relative">
                   <input
                     type={showPass ? "text" : "password"}
@@ -212,7 +191,7 @@ export default function RegisterPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Min. 8 characters"
                     required
-                    className="px-4 py-3 rounded-xl outline-none text-white text-sm w-full pr-10"
+                    className="px-4 py-2.5 sm:py-3 rounded-xl outline-none text-white text-[13px] sm:text-sm w-full pr-10"
                     style={inputStyle}
                     onFocus={inputFocus}
                     onBlur={inputBlur}
@@ -238,31 +217,17 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              {/* Error */}
               {error && (
                 <p className="text-[12px] text-white bg-red-500/20 border border-red-400/40 rounded-xl px-4 py-2">
                   {error}
                 </p>
               )}
 
-              {/* 🔥 BUTTON */}
               <button
                 type="submit"
                 disabled={loading || usernameStatus === "taken"}
-                className="
-                  w-full py-3 rounded-xl text-sm font-medium
-                  text-white
-                  transition-all duration-200
-                  border border-white
-                  bg-gradient-to-r from-[#ff4fa3] to-[#c63c8c]
-                  hover:bg-white hover:text-[#c63c8c]
-                  hover:bg-none
-                  active:scale-[0.97]
-                  disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100
-                "
-                style={{
-                  boxShadow: "0 10px 35px rgba(255,79,163,0.5)",
-                }}
+                className="w-full py-2.5 sm:py-3 rounded-xl text-[13px] sm:text-sm font-medium text-white transition-all duration-200 border border-white bg-gradient-to-r from-[#ff4fa3] to-[#c63c8c] hover:bg-white hover:text-[#c63c8c] hover:bg-none active:scale-[0.97] disabled:opacity-60 disabled:cursor-not-allowed disabled:active:scale-100"
+                style={{ boxShadow: "0 10px 35px rgba(255,79,163,0.5)" }}
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -277,8 +242,7 @@ export default function RegisterPage() {
             </form>
           </div>
 
-          {/* Footer */}
-          <p className="text-center text-[13px] text-pink-200">
+          <p className="text-center text-[12px] sm:text-[13px] text-pink-200">
             Already have an account?{" "}
             <Link href="/login" className="text-white font-medium hover:underline">
               Sign in
