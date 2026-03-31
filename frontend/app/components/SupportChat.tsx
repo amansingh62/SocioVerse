@@ -64,7 +64,7 @@ export default function SupportChat() {
 
         <div className="text-left flex-1">
           <p className="text-[13px] font-semibold text-black leading-none">
-            Support Chat
+            Socio Chat
           </p>
           <p className="text-[11px] text-gray-600 mt-0.5">
             Ask SocioAI for help

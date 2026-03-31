@@ -61,7 +61,6 @@ export default function Advertisement() {
         boxShadow: "0 4px 30px rgba(0,0,0,0.1)",
       }}
     >
-      {/* Header */}
       <div className="px-4 pt-4 pb-3 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <span
@@ -81,7 +80,6 @@ export default function Advertisement() {
           </div>
         </div>
 
-        {/* Carousel arrows */}
         <div className="flex gap-1">
           {[prev, next].map((fn, i) => (
             <button
@@ -108,7 +106,6 @@ export default function Advertisement() {
         </div>
       </div>
 
-      {/* Divider */}
       <div
         style={{
           height: 1,
@@ -117,7 +114,6 @@ export default function Advertisement() {
         }}
       />
 
-      {/* Ad card */}
       <div className="p-4">
         <div
           className="rounded-xl p-4 relative overflow-hidden"
@@ -126,7 +122,6 @@ export default function Advertisement() {
             border: "1px solid rgba(224,86,164,0.3)",
           }}
         >
-          {/* AD badge */}
           <span
             className="absolute top-2.5 right-2.5 text-[9px] font-bold px-1.5 py-0.5 rounded"
             style={{
@@ -138,7 +133,6 @@ export default function Advertisement() {
             AD
           </span>
 
-          {/* Sponsor badge */}
           <span
             className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold mb-2"
             style={{
@@ -165,7 +159,6 @@ export default function Advertisement() {
             </div>
           </div>
 
-          {/* CTA */}
           <Link
             href={ad.href}
             className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg text-[12px] font-semibold text-white transition hover:opacity-85"
@@ -187,7 +180,6 @@ export default function Advertisement() {
           </Link>
         </div>
 
-        {/* Dots */}
         <div className="flex justify-center gap-1.5 mt-3">
           {ADS.map((_, i) => (
             <button
@@ -206,7 +198,6 @@ export default function Advertisement() {
         </div>
       </div>
 
-      {/* Advertise CTA */}
       <div className="px-4 pb-4">
         <Link
           href="/dashboard/advertise"
