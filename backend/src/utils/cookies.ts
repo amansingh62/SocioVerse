@@ -5,7 +5,7 @@ const cookieOptions = {
   secure: true,
   path: "/",
   sameSite: "lax" as const,
-  // domain: ".socioverse.site"
+  domain: ".socioverse.site"
 };
 
 export const setAuthCookies = (
