@@ -4,8 +4,6 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/app/store/authStore";
-import { initSocket } from "../lib/socket";
-import { usePostStore } from "../store/postStore";
 
 import SupportChat from "@/app/components/SupportChat";
 import TrendingHashtags from "@/app/components/TrendingHashtags";
@@ -91,14 +89,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     fetchMe();
   }, [fetchMe]);
 
-  const initSocketListeners = usePostStore((s) => s.initSocketListeners);
-
   useEffect(() => {
     if (!user) return;
-    const socket = initSocket();
-    if (!socket) return;
-    initSocketListeners();
-    return () => { socket.disconnect(); };
   }, [user]);
 
   if (isLoading) {

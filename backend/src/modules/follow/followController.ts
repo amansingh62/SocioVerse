@@ -1,7 +1,6 @@
 import type { Request, Response } from "express";
 import { StatusCodes } from "../../constants/statusCodes.js";
 import { prisma } from "../../lib/prisma.js";
-import { getIO } from "../../lib/websocket.js";
 
 export const toggleFollow = async (req: Request, res: Response) => {
   const followerId = req.userId;
@@ -108,11 +107,6 @@ export const toggleFollow = async (req: Request, res: Response) => {
         followingCount: currentCounts?._count.following ?? 0,
       };
     });
-
-    const io = getIO();
-    if (result.isFollowing && result.notification) {
-      io.to(`user:${followingId}`).emit("notification", result.notification);
-    }
 
     return res.status(StatusCodes.OK).json({
       message: result.isFollowing ? "Followed" : "Unfollowed",

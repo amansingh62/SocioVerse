@@ -5,13 +5,14 @@ import { useParams } from "next/navigation";
 import api from "@/app/lib/axios";
 import Image from "next/image";
 import { useAuthStore } from "@/app/store/authStore";
-import { initSocket } from "@/app/lib/socket";
+import { connectSocket } from "@/app/lib/socket";
 
 type Message = {
   id: string;
   content: string;
   createdAt: string;
   isDeleted?: boolean;
+  conversationId: string;
   sender: {
     id: string;
     username: string;
@@ -47,36 +48,58 @@ export default function ChatPage() {
   useEffect(() => {
     if (!user || !conversationId) return;
 
-    const socket = initSocket();
+    const socket = connectSocket();
+
     if (!socket) return;
 
-    socket.emit("join_conversation", conversationId);
-
-    const handleMessage = (message: Message) => {
-      setMessages((prev) => {
-        const exists = prev.some((m) => m.id === message.id);
-        if (exists) return prev;
-        return [...prev, message];
-      });
-    };
-
-    const handleDelete = ({ messageId }: { messageId: string }) => {
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === messageId
-            ? { ...m, content: "This message was deleted", isDeleted: true }
-            : m
-        )
+    const handleOpen = () => {
+      socket.send(
+        JSON.stringify({
+          type: "JOIN_CONVERSATION",
+          conversationId,
+        }),
       );
     };
 
-    socket.on("receive_message", handleMessage);
-    socket.on("message_deleted", handleDelete);
+    const handleMessage = (event: MessageEvent) => {
+      try {
+        const data = JSON.parse(event.data);
+
+        if (data.type === "NEW_MESSAGE") {
+          const msg = data.payload as Message;
+
+          if (msg.conversationId !== conversationId) return;
+
+          setMessages((prev) => {
+            const exists = prev.some((m) => m.id === msg.id);
+            if (exists) return prev;
+            return [...prev, msg];
+          });
+        }
+      } catch (err) {
+        console.error("WS parse error", err);
+      }
+    };
+
+    socket.addEventListener("open", handleOpen);
+    socket.addEventListener("message", handleMessage);
+
+    if (socket.readyState === WebSocket.OPEN) {
+      handleOpen();
+    }
 
     return () => {
-      socket.emit("leave_conversation", conversationId);
-      socket.off("receive_message", handleMessage);
-      socket.off("message_deleted", handleDelete);
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send(
+          JSON.stringify({
+            type: "LEAVE_CONVERSATION",
+            conversationId,
+          }),
+        );
+      }
+
+      socket.removeEventListener("open", handleOpen);
+      socket.removeEventListener("message", handleMessage);
     };
   }, [user, conversationId]);
 
@@ -88,7 +111,7 @@ export default function ChatPage() {
         const res = await api.get(`/message/${conversationId}`);
         setMessages(res.data.messages);
         setParticipants(
-          res.data.participants.map((p: RawParticipant) => p.user)
+          res.data.participants.map((p: RawParticipant) => p.user),
         );
       } catch (error) {
         console.error("Failed to fetch messages:", error);
@@ -100,7 +123,7 @@ export default function ChatPage() {
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [messages.length]);
 
   const otherUser = useMemo(() => {
     if (!user || !participants.length) return undefined;
@@ -145,7 +168,6 @@ export default function ChatPage() {
   return (
     <div className="max-w-[640px] mx-auto flex flex-col h-[80vh]">
       <div className="flex flex-col flex-1 rounded-3xl overflow-hidden bg-[rgba(255,230,242,0.85)] border border-[rgba(224,86,164,0.25)] backdrop-blur-[20px]">
-
         <div className="flex items-center gap-3 px-4 sm:px-5 py-3 border-b border-[rgba(224,86,164,0.18)]">
           {otherUser?.image ? (
             <div className="w-8 h-8 sm:w-9 sm:h-9 shrink-0 rounded-full overflow-hidden">
@@ -168,7 +190,9 @@ export default function ChatPage() {
             </p>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-              <span className="text-[10px] sm:text-[11px] text-pink-300">Active now</span>
+              <span className="text-[10px] sm:text-[11px] text-pink-300">
+                Active now
+              </span>
             </div>
           </div>
         </div>
@@ -212,7 +236,9 @@ export default function ChatPage() {
                       }}
                     >
                       {m.isDeleted ? (
-                        <i className="text-gray-300">This message was deleted</i>
+                        <i className="text-gray-300">
+                          This message was deleted
+                        </i>
                       ) : (
                         m.content
                       )}

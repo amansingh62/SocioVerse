@@ -1,32 +1,36 @@
-import { io, Socket } from "socket.io-client";
-import { useAuthStore } from "../store/authStore";
+let socket: WebSocket | null = null;
+let isConnecting = false;
 
-let socket: Socket | null = null;
-
-export const initSocket = () => {
-  const user = useAuthStore.getState().user;
-  if (!user) return null;
-
-  if (socket) return socket;
-
-  socket = io(process.env.NEXT_PUBLIC_API_URL!, {
-    auth: {
-      userId: user.id,
-    },
-    transports: ["websocket"], 
-  });
-
-  return socket;
-};
-
-export const getSocket = () => {
-  if (!socket) throw new Error("Socket not initialized");
-  return socket;
-};
-
-export const disconnectSocket = () => {
-  if (socket) {
-    socket.disconnect();
-    socket = null;
+export const connectSocket = () => {
+  if (socket && socket.readyState === WebSocket.OPEN) {
+    return socket;
   }
+
+  if (isConnecting) {
+    return socket;
+  }
+
+  isConnecting = true;
+
+  socket = new WebSocket(process.env.NEXT_PUBLIC_WS_URL ?? "ws://localhost:5000");
+
+  socket.onopen = () => {
+    console.log("WS connected");
+    isConnecting = false;
+  };
+
+  socket.onclose = () => {
+    console.log("WS disconnected");
+    isConnecting = false;
+
+    setTimeout(() => {
+      connectSocket();
+    }, 2000);
+  };
+
+  socket.onerror = (err) => {
+    console.error("WS error", err);
+  };
+
+  return socket;
 };

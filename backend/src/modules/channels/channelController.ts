@@ -1,7 +1,6 @@
 import type { Request, Response } from "express";
 import { StatusCodes } from "../../constants/statusCodes.js";
 import { prisma } from "../../lib/prisma.js";
-import { getIO } from "../../lib/websocket.js";
 
 export const createChannel = async (req: Request, res: Response) => {
   const userId = req.userId;
@@ -253,9 +252,6 @@ export const sendChannelMessage = async (req: Request, res: Response) => {
     where: { id: channelId },
     data: { lastMessageAt: new Date() },
   });
-
-  const io = getIO();
-  io.to(channelId).emit("channelMessage", message);
 
   return res.status(StatusCodes.CREATED).json(message);
 };

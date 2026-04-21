@@ -3,7 +3,6 @@ import { StatusCodes } from "../../constants/statusCodes.js";
 import { prisma } from "../../lib/prisma.js";
 import cloudinary from "../../lib/cloudinary.js";
 import { env } from "../../config/env.js";
-import { getIO } from "../../lib/websocket.js";
 
 function extractHashtags(content: string) {
   const matches = content.match(/#[a-zA-Z0-9_]+/g) || [];
@@ -88,10 +87,6 @@ export const createPost = async (req: Request, res: Response) => {
       take: 5,
     });
 
-    const io = getIO();
-    io.emit("post:created", formattedPost);
-    io.emit("hashtags:updated", trendingHashtags);
-
     return res.status(StatusCodes.CREATED).json(formattedPost);
   } catch (error) {
     console.error("Create Post Error:", error);
@@ -165,10 +160,6 @@ export const deletePost = async (req: Request, res: Response) => {
       },
       take: 5,
     });
-
-    const io = getIO();
-    io.emit("post:deleted", id);
-    io.emit("hashtags:updated", trending);
 
     return res.status(StatusCodes.OK).json({
       message: "Post deleted successfully",
@@ -262,19 +253,6 @@ export const toggleLike = async (req: Request, res: Response) => {
 
       return { isLiked, post, notification };
     });
-
-    const io = getIO();
-
-    if (result.isLiked) {
-      io.emit("post:liked", { postId: id });
-
-      if (result.notification) {
-        io.to(`user:${result.post.authorId}`).emit(
-          "notification",
-          result.notification
-        );
-      }
-    }
 
     return res.json({ isLiked: result.isLiked });
 
@@ -371,8 +349,6 @@ export const addComment = async (req: Request, res: Response) => {
     },
   });
 
-  const io = getIO();
-
   if (post.authorId !== userId) {
     const notification = await prisma.notification.create({
       data: {
@@ -393,15 +369,6 @@ export const addComment = async (req: Request, res: Response) => {
       },
     });
 
-    io.to(`user:${post.authorId}`).emit("notification", {
-      ...notification,
-      commentContent: comment.content,
-    });
-
-    io.emit("comment:created", {
-      postId,
-      comment,
-    });
   }
 
   return res.status(StatusCodes.CREATED).json(comment);

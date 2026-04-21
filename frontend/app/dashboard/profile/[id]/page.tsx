@@ -16,29 +16,27 @@ export default function UserProfilePage() {
 
   const userId = id as string;
 
-  const profile = useProfileStore((s) =>
-    userId ? s.profilesById[userId] : undefined
-  );
+  const profile = useProfileStore((s) => userId ? s.profilesById[userId] : undefined);
+  
   const fetchProfile = useProfileStore((s) => s.fetchProfile);
   const loading = useProfileStore((s) => s.loading);
 
-  const profilePostIds = usePostStore((s) =>
-    userId ? s.profilePostIdsByUser[userId] : undefined
-  );
+  const profilePostIds = usePostStore((s) => userId ? s.profilePostIdsByUser[userId] : undefined);
+  
   const postsById = usePostStore((s) => s.postsById);
-
-  const ensureProfilePosts = usePostStore((s) => s.ensureProfilePosts);
 
   const posts = (profilePostIds ?? [])
     .map((id) => postsById[id])
     .filter(Boolean);
 
+    const fetchProfilePosts = usePostStore((s) => s.fetchProfilePosts);
+
   useEffect(() => {
     if (!userId) return;
 
     fetchProfile(userId);
-    ensureProfilePosts(userId);
-  }, [userId, fetchProfile, ensureProfilePosts]);
+    fetchProfilePosts(userId);
+  }, [userId, fetchProfile, fetchProfilePosts]);
 
   const handleMessage = async () => {
     if (!profile) return;

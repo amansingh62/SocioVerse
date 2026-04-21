@@ -70,9 +70,15 @@ export default function SearchBar({ rightSlot }: { rightSlot?: React.ReactNode }
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  useEffect(() => {
-    if (mobileSearchOpen) setTimeout(() => mobileInputRef.current?.focus(), 50);
-  }, [mobileSearchOpen]);
+useEffect(() => {
+  if (mobileSearchOpen) {
+    const t = setTimeout(() => {
+      mobileInputRef.current?.focus();
+    }, 50);
+
+    return () => clearTimeout(t);
+  }
+}, [mobileSearchOpen]);
 
   const handleLogout = async () => {
     await api.post("/auth/logout");

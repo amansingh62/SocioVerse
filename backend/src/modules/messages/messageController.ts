@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import { StatusCodes } from "../../constants/statusCodes.js";
 import { prisma } from "../../lib/prisma.js";
-import { getIO } from "../../lib/websocket.js";
+import { emitToConversation, emitToUser } from "../../ws/emitter.js";
 
 export const conversationStart = async (req: Request, res: Response) => {
   const senderId = req.userId;
@@ -120,9 +120,29 @@ export const sendMessage = async (req: Request, res: Response) => {
       },
     });
 
-    const io = getIO();
+    const members = await prisma.conversationMember.findMany({
+      where: { conversationId },
+    });
 
-    io.to(`conversation:${conversationId}`).emit("receive_message", message);
+    const receiver = members.find((m) => m.userId !== senderId);
+
+    const event = {
+      type: "NEW_MESSAGE" as const,
+      payload: {
+        id: message.id,
+        content: message.content,
+        senderId: message.senderId,
+        conversationId: message.conversationId,
+        createdAt: message.createdAt.toISOString(),
+        sender: message.sender,
+      },
+    };
+
+    if (receiver) {
+      emitToUser(receiver.userId, event);
+    }
+
+    emitToConversation(conversationId, event);
 
     return res.json(message);
   } catch (error) {
@@ -266,12 +286,6 @@ export const deleteMessage = async (req: Request, res: Response) => {
         content: "This message was deleted",
         isDeleted: true,
       },
-    });
-
-    const io = getIO();
-
-    io.to(`conversation:${message.conversationId}`).emit("message_deleted", {
-      messageId: message.id,
     });
 
     return res.status(StatusCodes.OK).json(updatedMessage);

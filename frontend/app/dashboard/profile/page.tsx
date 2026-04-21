@@ -11,18 +11,14 @@ import { ProfilePageSkeleton } from "@/app/components/skeleton/ProfilePageSkelet
 
 export default function MyProfilePage() {
   const user = useAuthStore((s) => s.user);
+  const fetchProfilePosts = usePostStore((s) => s.fetchProfilePosts);
+  const fetchSavedPosts = usePostStore((s) => s.fetchSavedPosts);
 
-  const profile = useProfileStore((s) =>
-    user ? s.profilesById[user.id] : undefined
-  );
+  const profile = useProfileStore((s) => user ? s.profilesById[user.id] : undefined);
 
   const fetchProfile = useProfileStore((s) => s.fetchProfile);
-  const ensureProfilePosts = usePostStore((s) => s.ensureProfilePosts);
-  const ensureSavedPosts = usePostStore((s) => s.ensureSavedPosts);
 
-  const profilePostIds = usePostStore((s) =>
-    user ? s.profilePostIdsByUser[user.id] : undefined
-  );
+  const profilePostIds = usePostStore((s) => user ? s.profilePostIdsByUser[user.id] : undefined);
 
   const savedIds = usePostStore((s) => s.savedIds);
   const postsById = usePostStore((s) => s.postsById);
@@ -36,9 +32,9 @@ export default function MyProfilePage() {
   useEffect(() => {
     if (!user) return;
     fetchProfile(user.id);
-    ensureProfilePosts(user.id);
-    ensureSavedPosts();
-  }, [user, fetchProfile, ensureProfilePosts, ensureSavedPosts]);
+    fetchProfilePosts(user.id);
+    fetchSavedPosts();
+  }, [user, fetchProfile, fetchProfilePosts, fetchSavedPosts]);
 
   if (!profile) return <ProfilePageSkeleton />;
 

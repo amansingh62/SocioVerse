@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import api from "../lib/axios";
 import { usePostStore } from "../store/postStore";
-import { getSocket } from "../lib/socket";
 import { TrendingHashtagsSkeleton } from "./skeleton/TrendingHashtags";
 
 interface Hashtag {
@@ -33,17 +32,7 @@ export default function TrendingHashtags() {
     };
 
     load();
-
-    const socket = getSocket();
-    if (!socket) return;
-
-    socket.on("hashtags:updated", (tags) => {
-      setHashtags(tags);
-    });
-
-    return () => {
-      socket.off("hashtags:updated");
-    };
+    
   }, []);
 
   if (loading && hashtags.length === 0) {

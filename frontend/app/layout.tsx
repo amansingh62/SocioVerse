@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import SocketListener from "./components/SocketListener";
 
 export const metadata: Metadata = {
   title: "Socioverse",
@@ -26,7 +25,6 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <SocketListener />
         {children}</body>
     </html>
   );
